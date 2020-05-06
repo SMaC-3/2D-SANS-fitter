@@ -84,7 +84,7 @@ pars2static = (dict(scale=0.8090981755706477,
                     concentration_salt=0.38,
                     dielectconst=80.2,))
 
-indexSelected = ['74']
+indexSelected = ['61']
 
 # par = [0/1, guess, lower bound, upper bound, num pts]
 
