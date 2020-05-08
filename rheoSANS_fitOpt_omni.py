@@ -23,23 +23,22 @@ import numpy as np
 # FTOL APPROPRIATE?
 
 # =============================================================================
-print('test')
 
 saveOpt = '0'  # set to '1' to save processed data files, set to any 'number string' other than '1' to not save
-describer = ''
-location = '../2D_simFits/ReducedChi2_fits/25wt_CAPB_SLES_2wt_NaCl/'
+describer = 'ManualPars'
+location = '../2D_simFits/ReducedChi2_fits/15wt_CAPB_SLES_2wt_NaCl/'
 
 
 # ['1' (version #), indexSelect, pars2sim, [ [fitParam, [fitMin, fitMax, numPt1]] ], loopNum]
 
-pars2sim = (dict(scale=0.8005,
-                 background=0.5142867229475522,
+pars2sim = (dict(scale=0.7491167351110035,
+                 background=0.3631058456222613,
                  sld=-0.4,
                  sld_solvent=6.3,
-                 radius=21.350361527275133,
+                 radius=21.359807206748116,
                  radius_pd=0,
                  radius_pd_n=35,
-                 length=82.2,
+                 length=97.7981179746907,
                  length_pd=0,
                  length_pd_n=35,
                  theta=90,
@@ -47,25 +46,25 @@ pars2sim = (dict(scale=0.8005,
                  theta_pd_n=35,
                  theta_pd_type='gaussian',
                  phi=0,
-                 phi_pd=20,  # try with larger pd like 360
+                 phi_pd=58.10942807274323,
                  phi_pd_n=35,
                  phi_pd_type='gaussian',
                  radius_effective_mode=0,
-                 radius_effective=33.474445715581474,
-                 volfraction=0.2683,
-                 charge=26.978147871213366,
+                 radius_effective=37.154624629631016,
+                 volfraction=0.1626,
+                 charge=26.9,
                  temperature=298.0,
                  concentration_salt=0.38,
                  dielectconst=80.2,))
 
-pars2static = (dict(scale=0.8090981755706477,
-                    background=0.5142867229475522,
+pars2static = (dict(scale=0.7491167351110035,
+                    background=0.3631058456222613,
                     sld=-0.4,
                     sld_solvent=6.3,
-                    radius=21.350361527275133,
+                    radius=21.359807206748116,
                     radius_pd=0,
                     radius_pd_n=35,
-                    length=82.2,
+                    length=93.84441091605461,
                     length_pd=0,
                     length_pd_n=35,
                     theta=90,
@@ -73,18 +72,18 @@ pars2static = (dict(scale=0.8090981755706477,
                     theta_pd_n=35,
                     theta_pd_type='uniform',
                     phi=0,
-                    phi_pd=90,  # try with larger pd like 360
+                    phi_pd=90,
                     phi_pd_n=35,
                     phi_pd_type='uniform',
                     radius_effective_mode=0,
-                    radius_effective=33.474445715581474,
-                    volfraction=0.2683,
-                    charge=26.978147871213366,
+                    radius_effective=37.154624629631016,
+                    volfraction=0.1626,
+                    charge=26.9,
                     temperature=298.0,
                     concentration_salt=0.38,
                     dielectconst=80.2,))
 
-indexSelected = ['61']
+indexSelected = ['45']
 
 # par = [0/1, guess, lower bound, upper bound, num pts]
 
@@ -92,7 +91,7 @@ fitChoose = dict(scale=[0,     0.8005,          0.9,        1.5,        5],
                  background=[0,     0.51,        0.01,       0.6,        5],
                  radius=[0,     20.3,         18,         22,         5],
                  radius_pd=[0,     0.1,        0,          0.5,        5],
-                 length=[1,     145,        80,         250,        5],
+                 length=[0,     145,        80,         250,        5],
                  length_pd=[0,     0.1,        0,          0.9,        5],
                  phi=[0,     0,          0,          90,         5],
                  phi_pd=[0,     17,         0,          90,         5],
@@ -104,8 +103,8 @@ fitChoose = dict(scale=[0,     0.8005,          0.9,        1.5,        5],
                  bandVal=[0,     0.5,        0,          1,          5],)
 
 
-#p_list = ['scale']
-#p_guess = [0.8]
+# p_list = ['scale']
+# p_guess = [0.8]
 # p_bounds=[]
 
 p_list, p_guess, p_bounds, p_num = rsf.fitInput(fitChoose)
@@ -137,7 +136,7 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     sans = rsf.sans2d()  # Define sans object
     sans.qmin = 0.04  # set qmin
-    sans.bandVal = 1
+    sans.bandVal = 0.49
     sans.getData(indexSelect)  # get selected experimental data
     sans.pars.update(pars2sim)  # update parameter dictionary with user input
     sans.staticPars.update(pars2static)  # update static parameter dictionary with user input
@@ -150,8 +149,12 @@ def rheoSANS_fitOpt(options, saveOpt):
     ftol = 1e-6
     method = 'lm'
 
-    optim = least_squares(sans.objFunc, p_guess, method=method, ftol=ftol,
-                          args=(p_list,))
+    if not p_list:
+        optim = sans.objFunc(p_guess=p_guess, p_list=p_list)
+        print(np.nansum(optim))
+    else:
+        optim = least_squares(sans.objFunc, p_guess, method=method, ftol=ftol,
+                              args=(p_list,))
 #    optim = basinhopping(sans.objFunc, p_guess,minimizer_kwargs={'args': (p_list,)})
 # args=(p_list,))
 
@@ -160,7 +163,11 @@ def rheoSANS_fitOpt(options, saveOpt):
 
 #    print(optim.x)
     out = optim
-    minPars = dict(zip(p_list, optim.x))
+
+    if not p_list:
+        minPars = dict(zip(p_list, p_guess))
+    else:
+        minPars = dict(zip(p_list, optim.x))
     sans.pars.update(minPars)
     minParams = sans.pars
     print(minParams)
@@ -173,9 +180,10 @@ def rheoSANS_fitOpt(options, saveOpt):
             (1 - sans.bandVal)*sans.calculator(**sans.staticPars)
     sans.optimSim = optimSim
 
-    chi2_reduced = np.sum(optim.fun)
-
-    chi2_reduced = 'reduced chi2: ' + str(np.sum(optim.fun))  # res
+    if not p_list:
+        chi2_reduced = 'reduced chi2: ' + str(np.sum(optim))
+    else:
+        chi2_reduced = 'reduced chi2: ' + str(np.sum(optim.fun))  # res
 
 # =============================================================================
 
