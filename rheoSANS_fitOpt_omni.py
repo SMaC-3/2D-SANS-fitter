@@ -147,7 +147,7 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     sans.simStatic = sans.calculator(**sans.staticPars)  # calculate static simulation
 
-    ftol = 1e6
+    ftol = 1e-6
     method = 'lm'
 
     optim = least_squares(sans.objFunc, p_guess, method=method, ftol=ftol,
