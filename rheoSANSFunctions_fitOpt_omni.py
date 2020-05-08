@@ -121,7 +121,6 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 #        self.beamStop = np.logical_or(bsq < self.qmin, bsq>0.15)
         self.expData_bs = self.expData_raw[~self.beamStop]
 
-
 #        qx_neg_lower = -0.019
 #        qx_neg_upper = -0.012
 #        qx_pos_lower = 0.021
