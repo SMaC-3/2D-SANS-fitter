@@ -5,8 +5,8 @@ AnnularSectorExtraction.py
 BBY0036279_2D_2.0_18.0_CNCRw12_100ps.dat
 BBY0036279_2D_2.0_18.0_CNCRw12_100ps.h5
 CodeSummary.txt
-#Plot_multi_1D.py
-#Plot_sector.py
+#plot_multi_1D.py
+#plot_sector.py
 #plot_annular.py
 #plot_multi_2D.py
 plot_seaborn.py
