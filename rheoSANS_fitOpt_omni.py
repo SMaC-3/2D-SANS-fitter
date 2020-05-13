@@ -6,11 +6,11 @@ Created on Fri 24 Apr 2020
 @author: jkin0004
 
 """
+import numpy as np
+from scipy.optimize import least_squares
 import rheoSANSFunctions_fitOpt_omni as rsf
 import os
-from scipy.optimize import least_squares
 # from scipy.optimize import basinhopping
-import numpy as np
 
 # =============================================================================
 # User input
@@ -24,29 +24,26 @@ import numpy as np
 
 # =============================================================================
 
-saveOpt = '0'  # set to '1' to save processed data files, set to any 'number string' other than '1' to not save
-describer = 'ManualPars'
-location = '../2D_simFits/ReducedChi2_fits/15wt_CAPB_SLES_2wt_NaCl/'
+# =============================================================================
+# Set default parameter dictionaries
+# =============================================================================
 
-
-# ['1' (version #), indexSelect, pars2sim, [ [fitParam, [fitMin, fitMax, numPt1]] ], loopNum]
-
-pars2sim = (dict(scale=0.7491167351110035,
-                 background=0.3631058456222613,
+pars2sim = (dict(scale=0.9354871682493263,
+                 background=0.39098276092907647,
                  sld=-0.4,
                  sld_solvent=6.3,
                  radius=21.359807206748116,
                  radius_pd=0,
                  radius_pd_n=35,
-                 length=97.7981179746907,
+                 length=174.8353113159045,
                  length_pd=0,
                  length_pd_n=35,
                  theta=90,
                  theta_pd=0,
                  theta_pd_n=35,
                  theta_pd_type='gaussian',
-                 phi=0,
-                 phi_pd=58.10942807274323,
+                 phi=45,
+                 phi_pd=0,
                  phi_pd_n=35,
                  phi_pd_type='gaussian',
                  radius_effective_mode=0,
@@ -83,34 +80,46 @@ pars2static = (dict(scale=0.7491167351110035,
                     concentration_salt=0.38,
                     dielectconst=80.2,))
 
-indexSelected = ['45']
+# =============================================================================
+# Select fitting parameters & initial values
+# =============================================================================
 
-# par = [0/1, guess, lower bound, upper bound, num pts]
-
-fitChoose = dict(scale=[0,     0.8005,          0.9,        1.5,        5],
-                 background=[0,     0.51,        0.01,       0.6,        5],
-                 radius=[0,     20.3,         18,         22,         5],
+fitChoose = dict(scale=[0,     0.93,          0.9,        1.5,        5],
+                 background=[0,     0.39,        0.01,       0.6,        5],
+                 radius=[0,     21,         18,         22,         5],
                  radius_pd=[0,     0.1,        0,          0.5,        5],
-                 length=[0,     145,        80,         250,        5],
+                 length=[0,     175,        80,         250,        5],
                  length_pd=[0,     0.1,        0,          0.9,        5],
                  phi=[0,     0,          0,          90,         5],
-                 phi_pd=[0,     17,         0,          90,         5],
+                 phi_pd=[0,     60.5,         0,          90,         5],
                  theta=[0,     90,         0,          90,         5],
                  theta_pd=[0,     40,          0,          90,         5],
-                 radius_effective=[0,     33.5,         20,         60,         5],
+                 radius_effective=[0,     35,         20,         60,         5],
                  volfraction=[0,     0.2157,     0.02,       0.35,       5],
                  charge=[0,     27,         10,         40,         5],
-                 bandVal=[0,     0.5,        0,          1,          5],)
-
-
-# p_list = ['scale']
-# p_guess = [0.8]
-# p_bounds=[]
+                 bandVal=[0,     0.53,        0,          1,          5],)
 
 p_list, p_guess, p_bounds, p_num = rsf.fitInput(fitChoose)
 p_bounds = []
 
-options = [describer, None, pars2sim, p_list, p_guess, p_bounds, pars2static, location]
+# =============================================================================
+# Set sample specific variables
+# =============================================================================
+
+indexSelected = ['47']
+
+banVal_man = 1
+
+saveOpt = '0'  # set to '1' to save processed data files, set to any 'number string' other than '1' to not save
+describer = ''
+location = '../2D_simFits/ReducedChi2_fits/15wt_CAPB_SLES_2wt_NaCl/'
+
+# =============================================================================
+# Defining input
+# =============================================================================
+
+options = [describer, None, pars2sim, p_list, p_guess, p_bounds, pars2static,
+           location, banVal_man]
 
 # =============================================================================
 # Defining least squares fitting function
@@ -130,13 +139,15 @@ def rheoSANS_fitOpt(options, saveOpt):
     p_bounds = options[5]
     pars2static = options[6]
     location = options[7]
+    bandVal_man = options[8]
 
 # =============================================================================
     # Define sans object and perform required methods
 
     sans = rsf.sans2d()  # Define sans object
     sans.qmin = 0.04  # set qmin
-    sans.bandVal = 0.49
+    sans.bandVal = bandVal_man
+    print('band value = ' + str(sans.bandVal))
     sans.getData(indexSelect)  # get selected experimental data
     sans.pars.update(pars2sim)  # update parameter dictionary with user input
     sans.staticPars.update(pars2static)  # update static parameter dictionary with user input
@@ -151,7 +162,7 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     if not p_list:
         optim = sans.objFunc(p_guess=p_guess, p_list=p_list)
-        print(np.nansum(optim))
+        # print(np.nansum(optim))
     else:
         optim = least_squares(sans.objFunc, p_guess, method=method, ftol=ftol,
                               args=(p_list,))
@@ -170,7 +181,7 @@ def rheoSANS_fitOpt(options, saveOpt):
         minPars = dict(zip(p_list, optim.x))
     sans.pars.update(minPars)
     minParams = sans.pars
-    print(minParams)
+    # print(minParams)
 #    optimSim = sans.calculator(**sans.pars)
     if 'bandVal' in minPars.keys():
         optimSim = minPars['bandVal']*sans.calculator(**sans.pars) + (
@@ -178,6 +189,8 @@ def rheoSANS_fitOpt(options, saveOpt):
     else:
         optimSim = sans.bandVal*sans.calculator(**sans.pars) + \
             (1 - sans.bandVal)*sans.calculator(**sans.staticPars)
+        minParams.update({'bandVal': sans.bandVal})
+        print(minPars)
     sans.optimSim = optimSim
 
     if not p_list:
@@ -198,7 +211,7 @@ def rheoSANS_fitOpt(options, saveOpt):
     sans.sasPlot(sans.expInt, sim=sans.simInt.data, resid=sans.residual)
 
     sans.sectorCompPlot(sans.expInt, sans.simInt)
-    #
+
     sans.annularCompPlot(sans.expInt, sans.simInt)
 
 
@@ -207,8 +220,8 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     os.system('afplay /System/Library/Sounds/Glass.aiff')
 
-#    saveOpt = []
-#    saveOpt = input("would you like to save? enter '1' for yes: ")
+    saveOpt = []
+    saveOpt = input("would you like to save? enter '1' for yes: ")
 
     if saveOpt == '1' or saveOpt == '':
         fitInfo = [ftol, method]
