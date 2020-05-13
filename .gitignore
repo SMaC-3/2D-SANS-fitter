@@ -28,6 +28,8 @@ rheoSANS_sigBandPlot.py
 #sans1d_lsq.py
 #sans1d_run.py
 
+distributionComp.py
+
 #GitHub python .gitignore template
 # Byte-compiled / optimized / DLL files
 __pycache__/
