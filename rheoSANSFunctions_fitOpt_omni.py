@@ -363,6 +363,14 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
         return
 
+    def makeSimObj(self, scat):
+        dz = np.array(list(itertools.repeat(10, len(self.expData_sort[:, 0]))))
+        self.simData = sasmodels.data.Data2D(x=self.expData_sort[:, 0],
+                                             y=self.expData_sort[:, 1],
+                                             z=scat,
+                                             dz=dz)
+        return
+
     def sasPlot(self, data, sim=None, resid=None):
 
         # General method
@@ -395,26 +403,32 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
         #        q, binave, errave = ansect.sector(self., centre, width, '0', describer = None)
 
-        expVertq, expVertI, expVerterr = ansect.sector(exp, 0, np.pi/20, '0', describer=None)
-        simVertq, simVertI, simVerterr = ansect.sector(sim, 0, np.pi/20, '0', describer=None)
-#        print(np.nansum( (( (expVertI-simVertI) / expVerterr)**2 ) ))
+        expVertq, expVertI, expVerterr = ansect.sector(
+            exp, 0, np.pi/20, '0', describer=None)
+        simVertq, simVertI, simVerterr = ansect.sector(
+            sim, 0, np.pi/20, '0', describer=None)
+        # print(np.nansum((((expVertI-simVertI) / expVerterr)**2))/len(expVertI))
 
         expHorizq, expHorizI, expHorizerr = ansect.sector(
             exp, np.pi/2, np.pi/20, '0', describer=None)
         simHorizq, simHorizI, simHorizerr = ansect.sector(
             sim, np.pi/2, np.pi/20, '0', describer=None)
-#        print(np.nansum( ( (expHorizI-simHorizI) / expHorizerr)**2 )/len(expHorizI))
+        # print(np.nansum(((expHorizI-simHorizI) / expHorizerr)**2)/len(expHorizI))
 
-        expq, expI, experr = ansect.sector(exp, np.pi/2, np.pi, '0', describer=None)
-        simq, simI, simerr = ansect.sector(sim, np.pi/2, np.pi, '0', describer=None)
-#        print(np.nansum( ( (expI-simI) / experr)**2 )/len(expI))
+        expq, expI, experr = ansect.sector(
+            exp, np.pi/2, np.pi, '0', describer=None)
+        simq, simI, simerr = ansect.sector(
+            sim, np.pi/2, np.pi, '0', describer=None)
+        # print(np.nansum(((expI-simI) / experr)**2)/len(expI))
 
         if pltErr == 1:
             fig = plt.figure(figsize=[8.5, 3], dpi=150)
             ax1 = fig.add_subplot(1, 3, 1)
-            ax1.errorbar(expVertq, expVertI, yerr=expVerterr, marker='o', markersize=2, markerfacecolor=[0, 0, 0], linestyle='',
+            ax1.errorbar(expVertq, expVertI, yerr=expVerterr,
+                         marker='o', markersize=2, markerfacecolor=[0, 0, 0], linestyle='',
                          label='dataVert')
-            ax1.plot(simVertq, simVertI, marker='o', markersize=2, markerfacecolor=[0, 0, 0], linestyle='',
+            ax1.plot(simVertq, simVertI,
+                     marker='o', markersize=2, markerfacecolor=[0, 0, 0], linestyle='',
                      label='simVert')
             ax1.set_xscale('log')
             ax1.set_yscale('log')
@@ -484,8 +498,8 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
         #        q, binave, errave = ansect.sector(self., centre, width, '0', describer = None)
 
-        expVertq, expVertI = ansect.annular(exp, radius=0.07, thx=0.01)
-        simVertq, simVertI = ansect.annular(sim, radius=0.07, thx=0.01)
+        expVertq, expVertI, expVerterr = ansect.annular(exp, radius=0.07, thx=0.01)
+        simVertq, simVertI, simVerterr = ansect.annular(sim, radius=0.07, thx=0.01)
 
 #        if pltErr == 0:
         fig = plt.figure()
@@ -519,7 +533,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         # =============================================================================
 
         #        print('objFunc called')
-        print(dict(zip(p_list, p_guess)))
+        #print(dict(zip(p_list, p_guess)))
         dof = len(self.expData.q_data) - len(p_guess)
 #        print(dof)
 
@@ -904,22 +918,22 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
         location = input('file path: ')
 
     if path.exists(location + saveName2 + type2):
-        #        versionNum1 = input("Input a version number: ")
-        versionNum1 = 'R2'
+        versionNum1 = input("Input a version number: ")
+        # versionNum1 = 'R2'
         with open(location + saveName2 + versionNum1 + type2, 'w') as file:
             for lines in output:
                 file.write(lines)
                 file.write("\n")
     else:
-        #        versionNum1 = input("Input a version number: ")
-        versionNum1 = 'R2'
+        versionNum1 = input("Input a version number: ")
+        # versionNum1 = 'R2'
         with open(location + saveName2 + versionNum1 + type2, 'w') as file:
             for lines in output:
                 file.write(lines)
                 file.write("\n")
 
     if path.exists(location + saveName1 + type1):
-        #        versionNum = input("Input a version number: ")
+        # versionNum = input("Input a version number: ")
         write_3_column(location + saveName1 + versionNum1 + type1, sans)
 
     else:
