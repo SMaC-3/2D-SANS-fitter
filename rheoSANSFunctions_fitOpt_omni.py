@@ -8,6 +8,7 @@ Created on Fri 24 Apr 2020
 """
 
 import numpy as np
+import pandas as pd
 from scipy.interpolate import griddata
 import csv
 import matplotlib.pyplot as plt
@@ -895,12 +896,18 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
     output.append(' ')
 
     for key, val in minParams.items():
-        output.append(str(key) + '=' + str(val) + ',')
+        if type(val) == float:
+            output.append(str(key) + '=' + str(round(val, sans.dp)) + ',')
+        else:
+            output.append(str(key) + '=' + str(val) + ',')
     output.append(' ')
 
     output.append(' static parameters ')
     for key, val in sans.staticPars.items():
-        output.append(str(key) + '=' + str(val) + ',')
+        if type(val) == float:
+            output.append(str(key) + '=' + str(round(val, sans.dp)) + ',')
+        else:
+            output.append(str(key) + '=' + str(val) + ',')
 
     output.append(' ')
 
@@ -910,7 +917,8 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
 
     output.append('Returned_the_following_goodness_of_fit_measures:')
     # output.append(chi2)
-    output.append(stats)
+
+    output = output + stats
 #    print(output)
 
     while path.exists(location) == False:
@@ -995,3 +1003,53 @@ def sectPlot(sans):
     plt.legend()
 
     return
+
+#############################################################################
+
+
+def loadDict(build, popPars):
+
+    data = pd.read_csv(build,
+                       sep='=', skiprows=4, nrows=26, header=None)
+    # %% codecell
+    # print(B)
+    # dir(vals)
+    pars = {}
+    vars = []
+    vals = []
+    for id in data.iterrows():
+        if 'type' in id[1][0]:
+            vars.append(id[1][0])
+            vals.append(id[1][1][0:-1])
+        else:
+            vars.append(id[1][0])
+            vals.append(float(id[1][1][0:-1]))
+
+    pars = (dict(zip(vars, vals)))
+
+    # %% codecell
+    data_static = pd.read_csv(build,
+                              sep='=', skiprows=32, nrows=25, header=None)
+    # %% codecell
+    # print(B)
+    # dir(vals)
+    pars_static = {}
+    vars = []
+    vals = []
+    for id in data_static.iterrows():
+        if 'type' in id[1][0]:
+            vars.append(id[1][0])
+            vals.append(id[1][1][0:-1])
+        else:
+            vars.append(id[1][0])
+            vals.append(float(id[1][1][0:-1]))
+            # print(id[1][0])
+
+    pars_static = (dict(zip(vars, vals)))
+    # print(pars_static.keys())
+
+    for par in popPars:
+        pars.pop(par)
+        pars_static.pop(par)
+
+    return pars, pars_static
