@@ -28,6 +28,11 @@ rheoSANS_sigBandPlot.py
 #sans1d_lsq.py
 #sans1d_run.py
 
+*.png
+*.dat
+*.ipynb
+misc.py
+
 distributionComp.py
 
 #GitHub python .gitignore template
