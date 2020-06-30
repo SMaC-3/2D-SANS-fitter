@@ -17,6 +17,7 @@ from matplotlib import cm
 from mpl_toolkits import mplot3d
 import itertools
 from os import path
+import os
 
 import sasmodels.compare
 import sasmodels.core
@@ -24,6 +25,8 @@ import sasmodels.direct_model
 import sasmodels.data
 
 import AnnularSectorExtraction_V2 as ansect
+
+import datetime
 
 
 # =============================================================================
@@ -134,7 +137,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 #        qx_upper = -0.051
 #
 #        qx_neg = np.logical_and(self.expData_bs[:,0] < qx_neg_upper, self.expData_bs[:,0] > qx_neg_lower)
-##        qx_neg = (self.expData_bs[:,0]< qx_neg_upper)
+# qx_neg = (self.expData_bs[:,0]< qx_neg_upper)
 #        data_qx_neg = self.expData_bs[~qx_neg]
 #
 #        qx_pos = np.logical_and(data_qx_neg[:,0] < qx_pos_upper, data_qx_neg[:,0] > qx_pos_lower)
@@ -258,12 +261,12 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         parameters = files_list_reduce(csv_filename, fieldnames)
         fileName, sample, shear = files_to_reduce(parameters, indexSelect)
 
-        self.simName = '../2D_simFits/' + fileName[0]
+        self.simName = '../2D_simFits/ReducedChi2_fits/' + fileName[0]
 
         self.simImport_raw = np.loadtxt(self.simName, delimiter="  ", skiprows=self.skipRows)
         bsq = np.sqrt(self.simImport_raw[:, 0]**2 + self.simImport_raw[:, 1]**2)
 #        self.beamStop = (bsq < self.qmin)
-        self.beamStop = np.logical_or(bsq < self.qmin, bsq > 0.15)
+        self.beamStop = bsq < self.qmin
         self.simImport_masked = self.simImport_raw[~self.beamStop]
 
         self.simImport_sort = np.array(
@@ -336,7 +339,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         # =============================================================================
 
         #        cyl = sasmodels.core.load_model_info('cylinder')
-        #hs = sasmodels.core.load_model_info('hardsphere')
+        # hs = sasmodels.core.load_model_info('hardsphere')
         #        cylhs = sasmodels.core.load_model_info('cylinder@hardsphere')
         cylhmsa = sasmodels.core.load_model_info('cylinder@hayter_msa')
 #        capcylhmsa = sasmodels.core.load_model_info('capped_cylinder@hayter_msa')
@@ -503,7 +506,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         simVertq, simVertI, simVerterr = ansect.annular(sim, radius=0.07, thx=0.01)
 
 #        if pltErr == 0:
-        fig = plt.figure()
+        fig = plt.figure(figsize=[3.64*2, 2.48*2])
         ax = fig.add_axes([1, 1, 1, 1])
 
         ax.scatter(expVertq, expVertI, marker='o', label='data')
@@ -514,6 +517,16 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         ax.legend()
         ax.minorticks_off()
 #        plt.savefig('../2d_simFits/fitPlots/' + self.expData.sample[0][0:-1] + self.expData.shear[0][0:4] +'annulus.png', dpi=150, orientation='landscape')
+        plt.rc('axes', linewidth=1.5)
+        plt.rc('axes', grid=False)
+        plt.rc('axes', labelsize='small')
+        #plt.rc('axes', titlesize = 'large')
+        #plt.rc('axes', titlelocation = 'center')
+
+        # Font
+        plt.rc('font', family='sans-serif')
+        plt.rc('font', weight='normal')
+        plt.rc('font', size=14)
 
     def surfacePlot(self, zzq):
 
@@ -534,7 +547,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         # =============================================================================
 
         #        print('objFunc called')
-        #print(dict(zip(p_list, p_guess)))
+        # print(dict(zip(p_list, p_guess)))
         dof = len(self.expData.q_data) - len(p_guess)
 #        print(dof)
 
@@ -545,9 +558,11 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
                      'radius_effective', 'volfraction']
 
         if 'bandVal' not in p_list and self.bandVal == 1:  # don't need to update static
-            #            print('option 1')
+            print('option 1')
             self.pars.update(dict(zip(p_list, p_guess)))
+            # self.pars.update(p_guess)
             sim = self.calculator(**self.pars)
+            print(dict(zip(p_list, p_guess)))
 
         elif any(item in omni_pars for item in p_list):  # need to update static
             #            print('option 2')
@@ -573,6 +588,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
                 sim = p_guess[p_list.index('bandVal')]*self.calculator(**self.pars) + \
                     (1 - p_guess[p_list.index('bandVal')])*self.calculator(**self.staticPars)
+                print(dict(zip(p_list, p_guess)))
 
             elif 'bandVal' not in p_list:
                 #                print('option 3')
@@ -605,6 +621,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
                 sim = p_guess[p_list.index('bandVal')]*self.calculator(**self.pars) + \
                     (1 - p_guess[p_list.index('bandVal')])*self.simStatic
+                print(dict(zip(p_list, p_guess)))
 
             elif 'bandVal' not in p_list:
 
@@ -615,7 +632,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
 #
 #        self.pars.update(dict(zip(p_list[1:], p_guess[1:])))
-##        self.pars.update(dict(zip(p_list, p_guess)))
+# self.pars.update(dict(zip(p_list, p_guess)))
 #        simShear = self.calculator(**self.pars)
 #
 #
@@ -704,6 +721,27 @@ def fitInput(fitChoose):
 
 
 #############################################################################
+
+
+def fitInput_V2(fitChoose):
+
+    #
+    # =============================================================================
+
+    p_list = []
+    p_guess = []
+
+    for keys, values in fitChoose.items():
+        if values[0] == 1:
+            p_list.append(keys)
+            p_guess.append(values[1])
+        else:
+            continue
+    return p_list, p_guess, p_bounds, p_num
+
+#############################################################################
+
+
 def simCalc(parsUpdate, sans):
 
     #
@@ -732,10 +770,10 @@ def errorCalc(listInfo, scatloop, parsUpdate, paraInfo, sans):
     dof = len(sans.expData.q_data) - len(listInfo)
 
     res = [sum((abs((sans.expData_sort[:, 2] - sims))/sims) / dof) for sims in scatloop]
-    #res = [sum((abs((sans.expData_sort[:,2] - sims))/(sans.expData_sort[:,2]*0.5+sims*0.5)) / dof) for sims in scatloop]
+    # res = [sum((abs((sans.expData_sort[:,2] - sims))/(sans.expData_sort[:,2]*0.5+sims*0.5)) / dof) for sims in scatloop]
     chi2 = [sum((((sans.expData_sort[:, 2] - sims)**2)/sims) / dof) for sims in scatloop]
 
-    #minRes = [np.amin(zzqResSum) for set in range(np.shape(zzqRes)[0])]
+    # minRes = [np.amin(zzqResSum) for set in range(np.shape(zzqRes)[0])]
     minResI = np.argmin(res)
     minChi2I = np.argmin(chi2)
 
@@ -854,7 +892,7 @@ def plot(sim, zzq, bounds):
     # set the limits of the plot to the limits of the data
     plt.axis([sim.xxq.min(), sim.xxq.max(), sim.yyq.min(), sim.yyq.max()])
     plt.colorbar()
-    #plt.pcolormesh(sim.xxq, sim.yyq, zMask[0], vmin = vmin, vmax=vmax, norm=matplotlib.colors.LogNorm())
+    # plt.pcolormesh(sim.xxq, sim.yyq, zMask[0], vmin = vmin, vmax=vmax, norm=matplotlib.colors.LogNorm())
 
 #############################################################################
 
@@ -864,7 +902,7 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
     #
     # =============================================================================
 
-    #location = '../2D_simFits/ReducedChi2_fits/20wt_CAPB_SLES_2wt_NaCl/'
+    # location = '../2D_simFits/ReducedChi2_fits/20wt_CAPB_SLES_2wt_NaCl/'
     describer = describer
 
     for idx, char in enumerate(sans.expData.shear[0]):
@@ -896,18 +934,18 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
     output.append(' ')
 
     for key, val in minParams.items():
-        if type(val) == float:
-            output.append(str(key) + '=' + str(round(val, sans.dp)) + ',')
-        else:
+        if type(val) == str:
             output.append(str(key) + '=' + str(val) + ',')
+        else:
+            output.append(str(key) + '=' + str(round(val, sans.dp)) + ',')
     output.append(' ')
 
     output.append(' static parameters ')
     for key, val in sans.staticPars.items():
-        if type(val) == float:
-            output.append(str(key) + '=' + str(round(val, sans.dp)) + ',')
-        else:
+        if type(val) == str:
             output.append(str(key) + '=' + str(val) + ',')
+        else:
+            output.append(str(key) + '=' + str(round(val, sans.dp)) + ',')
 
     output.append(' ')
 
@@ -919,6 +957,7 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
     # output.append(chi2)
 
     output = output + stats
+    output.append(str(datetime.datetime.now()))
 #    print(output)
 
     while path.exists(location) == False:
@@ -1010,10 +1049,7 @@ def sectPlot(sans):
 def loadDict(build, popPars):
 
     data = pd.read_csv(build,
-                       sep='=', skiprows=4, nrows=26, header=None)
-    # %% codecell
-    # print(B)
-    # dir(vals)
+                       sep='=', skiprows=4, nrows=27, header=None)
     pars = {}
     vars = []
     vals = []
@@ -1029,7 +1065,7 @@ def loadDict(build, popPars):
 
     # %% codecell
     data_static = pd.read_csv(build,
-                              sep='=', skiprows=32, nrows=25, header=None)
+                              sep='=', skiprows=33, nrows=26, header=None)
     # %% codecell
     # print(B)
     # dir(vals)
@@ -1047,9 +1083,105 @@ def loadDict(build, popPars):
 
     pars_static = (dict(zip(vars, vals)))
     # print(pars_static.keys())
+    print(popPars)
 
     for par in popPars:
         pars.pop(par)
         pars_static.pop(par)
 
     return pars, pars_static
+
+#############################################################################
+
+
+def update_dict_from_file(conc, shear_u, version, popPars, bandVal_man):
+
+    if shear_u == '0':
+        location_u = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_static/'.format(
+            conc=conc)
+    else:
+        location_u = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_{shear}ps/'.format(
+            conc=conc, shear=shear_u)
+
+    fileName = '{conc}wt_{shear}ps_simInfo_{version}.txt'.format(
+        conc=conc, shear=shear_u, version=version)
+
+    while os.path.isfile(location_u + fileName) == False:
+        if fileName == '':
+            use2update = 'n'
+            print('No file name supplied. Did not update dictionaries')
+            break
+        else:
+            print('error: file path does not exist. Please input a valid file path')
+            fileName = input('file path: ')
+
+    sim, static = loadDict(location_u + fileName, popPars)
+    updateBand = input('Would you like  to update band value as well? y/n [y]: ')
+    if updateBand == 'y' or updateBand == '':
+        bandVal_man = sim.pop('bandVal')
+    else:
+        popPars.append('bandVal')
+        sim.pop('bandVal')
+        bandVal_man = bandVal_man
+
+    return sim, static, bandVal_man
+
+#############################################################################
+
+
+def build_save_location(conc, shear_f):
+
+    if shear_f == '0':
+        location = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_static/'.format(
+            conc=conc)
+    else:
+        location = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_{shear}ps/'.format(
+            conc=conc, shear=shear_f)
+
+    return location
+
+#############################################################################
+
+
+def input_sample_check(conc, shear, id):
+    path = '/Users/jkin0004/Google Drive/University/PhD/Research/WLM rheo model/WLM ANSTO/WLM ANSTO data & code/2D sub D2O data & code'
+    file = '/expDataFiles.csv'
+
+    # os.path.isdir(path)
+    os.path.isfile(path + file)
+
+    exp = pd.read_csv(path+file, index_col='index')
+    # exp.set_index('index')
+    # print(exp.head)
+
+    shear_raw = exp.loc[id, 'shear']
+    sample_raw = exp.loc[id, 'sample']
+
+    for idx, char in enumerate(shear_raw):
+        if char != ' ':
+            continue
+        else:
+            shearIdx = idx
+    #            print(char)
+            break
+
+    for idx, char in enumerate(sample_raw):
+        if char != 'w':
+            continue
+        else:
+            sampleIdx = idx
+    #            print(char)
+            break
+
+    # print(shearIdx)
+    x = shear_raw[0:shearIdx]
+    y = sample_raw[0:sampleIdx]
+
+    # print(x+y)
+
+    if conc != y or shear != x:
+        raise Exception('Conc or shear mismatch')
+    else:
+        print('Sample input matches')
+
+    return
