@@ -3,7 +3,7 @@
 """
 Created on Fri 24 Apr 2020
 
-@author: jkin0004
+@author: Joshua King
 
 """
 
@@ -14,7 +14,6 @@ import csv
 import matplotlib.pyplot as plt
 import matplotlib.colors
 from matplotlib import cm
-from mpl_toolkits import mplot3d
 import itertools
 from os import path
 import os
@@ -24,7 +23,7 @@ import sasmodels.core
 import sasmodels.direct_model
 import sasmodels.data
 
-import AnnularSectorExtraction_V2 as ansect
+import annular_sector_extraction as ansect
 
 import datetime
 
@@ -34,11 +33,9 @@ import datetime
 # =============================================================================
 
 class sans2d:  # Necessary? Making another class to be used by two other classes? Changed 2 classes into 3!
+    """Class object for fitting and plotting 2D SANS data."""
 
     def __init__(self):
-
-        # General initial parameters for performing simulation
-        # =============================================================================
 
         self.qmax = 0.19
         self.qmin = 0.007
@@ -54,7 +51,6 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
             radius=20.0,
             radius_pd=.12,
             radius_pd_n=35,
-            #            radius_cap=21,
             length=110.0,
             length_pd=0.16,
             length_pd_n=35,
@@ -82,7 +78,6 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
             radius=19.33,
             radius_pd=.12,
             radius_pd_n=35,
-            #            radius_cap=21,
             length=88.0,
             length_pd=0,
             length_pd_n=35,
@@ -106,11 +101,20 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         self.xxq, self.yyq = np.meshgrid(self.q, self.q)
 
     def getData(self, indexSelect):
+        """Load experimental scattering data from a given index.
 
-        # General method
-        # retrieve experimental data using index, mask it, then define sasmodels data object
-        # =============================================================================
+        The index value should refer to a row defined by an 'index' column in a
+        csv file with other column headings 'filename', 'sample', and 'shear'.
 
+        Data is loaded from 'filename' corresponding to the given index. The scattering data
+        should be formatted as follows: qx, qy, I(q), I_err(q)
+
+        Args:
+            indexSelect
+
+        Returns:
+            2D sasmodels object
+        """
         csv_filename = '../ExpDataFiles.csv'
         fieldnames = ['index', 'filename', 'sample', 'shear']
 
@@ -122,36 +126,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         self.expData_raw = np.loadtxt(self.setName, delimiter="  ", skiprows=self.skipRows)
         bsq = np.sqrt(self.expData_raw[:, 0]**2 + self.expData_raw[:, 1]**2)
         self.beamStop = (bsq < self.qmin)
-#        self.beamStop = np.logical_or(bsq < self.qmin, bsq>0.15)
         self.expData_bs = self.expData_raw[~self.beamStop]
-
-#        qx_neg_lower = -0.019
-#        qx_neg_upper = -0.012
-#        qx_pos_lower = 0.021
-#        qx_pos_upper = 0.029
-#
-#        qy_lower = -0.014
-#        qy_upper = -0.011
-#
-#        qx_lower = -0.058
-#        qx_upper = -0.051
-#
-#        qx_neg = np.logical_and(self.expData_bs[:,0] < qx_neg_upper, self.expData_bs[:,0] > qx_neg_lower)
-# qx_neg = (self.expData_bs[:,0]< qx_neg_upper)
-#        data_qx_neg = self.expData_bs[~qx_neg]
-#
-#        qx_pos = np.logical_and(data_qx_neg[:,0] < qx_pos_upper, data_qx_neg[:,0] > qx_pos_lower)
-#        data_qx_pos = data_qx_neg[~qx_pos]
-#
-#        qy_qxRange = np.logical_and(data_qx_pos[:,0] < qx_pos_lower, data_qx_pos[:,0] > qx_neg_upper)
-#        qyRange = np.logical_and(data_qx_pos[:,1] < qy_upper, data_qx_pos[:,1] > qy_lower)
-#        qy_mask = np.logical_and(qy_qxRange == True, qyRange == True)
-#
-#        data_qy_mask = data_qx_pos[~qy_mask]
-#
-#        qx_mask = np.logical_and(data_qy_mask[:,0] < qx_upper, data_qy_mask[:,0] > qx_lower)
-#
-#        self.expData_masked = data_qy_mask[~qx_mask]
 
         # Removing detector shadow
 
@@ -165,7 +140,6 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
         qx_neg = np.logical_and(self.expData_bs[:, 0] <
                                 qx_neg_upper, self.expData_bs[:, 0] > qx_neg_lower)
-#        qx_neg = (self.expData_bs[:,0]< qx_neg_upper)
         data_qx_neg = self.expData_bs[~qx_neg]
 
         qx_pos = np.logical_and(data_qx_neg[:, 0] < qx_pos_upper, data_qx_neg[:, 0] > qx_pos_lower)
@@ -196,13 +170,17 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         return
 
     def interpData(self, data, dataSet=None):
+        """By default, this method takes I(q) data and interpolates this using qx, qy
+        from previously loaded expData. If dataSet is given instead, then qx, qy data
+        from that is used. Masks out q < qmin.
 
-        # General method
-        # Interpolate dataSet (2D sasmodels object) onto grid defined using initialised
-        # values. Mask out <qmin on grid and I
-        # =============================================================================
+        Args:
+            data, dataSet (optional)
 
-        #        zzq = griddata(dataSet[:,0:2], dataSet[:,2], (self.xxq,self.yyq), method = 'linear')
+        Returns:
+            2D sasmodels object, zzq grid of interpolated values.
+        """
+
         if dataSet != None:
             zzq1 = griddata((dataSet.qx_data, dataSet.qy_data), dataSet.data,
                             (self.xxq, self.yyq), method='linear')
@@ -244,17 +222,25 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         qy_grid = qy_grid[~beamStop]
 
         interp = sasmodels.data.Data2D(x=qx_grid, y=qy_grid, z=I_grid)
-        interp.err_data = np.array(list(itertools.repeat(10, len(qx_grid))))
+        interp.err_data = np.array(list(itertools.repeat(0, len(qx_grid))))
 
         return interp, zzq
-#        return interp
 
     def getSim(self, indexSelect):
+        """Load saved simulated scattering data from a given index.
 
-        # General method
-        # Sim equivalent of getData. Retrieves simulated data using index, masks it, then defines sasmodels object
-        # =============================================================================
+        The index value should refer to a row defined by an 'index' column in a
+        csv file with other column headings 'filename', 'sample', and 'shear'.
 
+        Data is loaded from 'filename' corresponding to the given index. The scattering
+        data should be formatted as follows: qx, qy, I(q)
+
+        Args:
+            indexSelect
+
+        Returns:
+            2D sasmodels object
+        """
         csv_filename = '../SimDataFiles.csv'
         fieldnames = ['index', 'filename', 'sample', 'shear']
 
@@ -277,55 +263,18 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
         return
 
-    def buildSimData(self):
-
-        # General method
-        # Experimental data is an imcomplete grid. This method is used to define regions to mask according to the (qx, qy) found
-        # from the combination of all unique qx and qy that are not present in the experimental data.
-        # A sasmodels data object is defined and this is passed into the makeCalc method
-        # =============================================================================
-
-        # Needed for calculator? using q from class definition as want all calcs to be based on the same grid
-        self.simData = sasmodels.data.empty_data2D(self.qx_unique, self.qy_unique, resolution=0.1)
-
-        # from here
-        # ADD IF STATEMENT TO DETERMINE IF EXP DATA IS PRESENT
-
-        simSet = set(itertools.product(self.qx_unique, self.qy_unique))
-        expSet = {(vals[0], vals[1]) for vals in self.expData_sort}
-
-        setDif = simSet - expSet  # (x,y) pairs in simulation not in experiment
-        # print(setDif)
-        arrayDif = np.array(list(setDif))
-        # print(arrayDif)
-        ranI = 1000
-        # (x,y) pairs in simulation not in experiment with constant z
-        self.arrayDif_z = np.insert(arrayDif, 2, ranI, axis=1)
-        # print(arrayDif_z)
-        exp_data = self.expData_sort[:, 0:3]
-        # print(exp_data)
-        self.expData_fill = np.vstack((exp_data, self.arrayDif_z))
-        self.expData_fill_sort = np.array(
-            sorted(self.expData_fill, key=lambda col: (col[1], col[0])))
-
-        # print(exp_dataFill)
-        exp_dataFillSas = sasmodels.data.Data2D(
-            self.expData_fill_sort[:, 0], self.expData_fill_sort[:, 1], self.expData_fill_sort[:, 2])
-
-        self.simData.mask = np.logical_or(
-            exp_dataFillSas.data == ranI, exp_dataFillSas.q_data < self.qmin)
-
-        self.simData.accuracy = 'low'
-
-        # til here could be undefr the getData method
-
-        return
-
     def buildSasGrid(self):
+        """
+        Build an empty 2D grid for doing simulations.
 
-        # General method
-        # Build an empty 2D grid for doing simulations. Can be passed into makeCalc method
-        # =============================================================================
+        Can be passed into makeCalc method
+
+        Args:
+            None (uses values defined in __init__)
+
+        Returns:
+            Empty 2D sasmodels object
+        """
 
         self.q = np.linspace(-self.qmax, self.qmax, self.nq)
         self.sasGrid = sasmodels.data.empty_data2D(self.q)
@@ -333,42 +282,39 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         return
 
     def makeCalc(self, dataSet):
+        """Build calculator object to perform simulations based on cylinder@hmsa.
 
-        # General method
-        #
-        # =============================================================================
+        Args:
+            dataSet: 2D sasmodels data object
 
-        #        cyl = sasmodels.core.load_model_info('cylinder')
-        # hs = sasmodels.core.load_model_info('hardsphere')
-        #        cylhs = sasmodels.core.load_model_info('cylinder@hardsphere')
+        Returns:
+            calculator object
+        """
+
+        #cyl = sasmodels.core.load_model_info('cylinder')
+        #hs = sasmodels.core.load_model_info('hardsphere')
+        #cylhs = sasmodels.core.load_model_info('cylinder@hardsphere')
         cylhmsa = sasmodels.core.load_model_info('cylinder@hayter_msa')
-#        capcylhmsa = sasmodels.core.load_model_info('capped_cylinder@hayter_msa')
-#        fcylhs = sasmodels.core.load_model_info('flexible_cylinder@hardsphere')
 
-        # model = sasmodels.core.build_model(cylhs, platform = 'dll') #Build using c version instead of python. Avoids pyopencl
         # Build using c version instead of python. Avoids pyopencl
         model = sasmodels.core.build_model(cylhmsa, platform='dll')
-
         self.calculator = sasmodels.direct_model.DirectModel(dataSet, model)
 
         return
 
-    def maskq(self, scat):
-
-        # General method
-        #
-        # =============================================================================
-
-        qx_mask = self.simData.qx_data[~self.simData.mask]
-        qy_mask = self.simData.qy_data[~self.simData.mask]
-
-        self.simMask = sasmodels.data.Data2D(
-            x=qx_mask, y=qy_mask, z=scat, dz=np.array(list(itertools.repeat(10, len(qx_mask)))))
-
-        return
-
     def makeSimObj(self, scat):
-        dz = np.array(list(itertools.repeat(10, len(self.expData_sort[:, 0]))))
+        """Make 2D sasmodels object with model calculated I(q).
+
+        This I(q) should have been calculated based on imported experimental qx, qy
+
+        Args:
+            scat: model calculated I(q)
+
+        Returns:
+            simData 2D sasmodels object
+        """
+
+        dz = np.array(list(itertools.repeat(0, len(self.expData_sort[:, 0]))))
         self.simData = sasmodels.data.Data2D(x=self.expData_sort[:, 0],
                                              y=self.expData_sort[:, 1],
                                              z=scat,
@@ -376,26 +322,34 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         return
 
     def sasPlot(self, data, sim=None, resid=None):
+        """Plot 2D data, model and/or residuals
 
-        # General method
-        #
-        # =============================================================================
+        Args:
+            data: 2D sasmodels object of experimental data
+            sim: 2D grid of I(q) from sasmdoels calculator
+            residuals: 2D grid of residuals
 
+        Returns:
+            Sasmodels plot/sub plots
+        """
         plt.figure()
         sasmodels.data.plot_theory(data, sim, resid, use_data=True, view='log')
-        # plt.show()
-#        plt.savefig('../2d_simFits/fitPlots/' + self.expData.sample[0][0:-1] + self.expData.shear[0][0:4] +'2D.png')
-
         return
 
     def interpPlot(self):
+        """
+        Plots interpolated experimental and modelled data with residuals.
 
-        # General method
-        #
-        # =============================================================================
+        Requires sans2d object to be defined with expData, optimSim attributes.
 
-        self.expInt, a = self.interpData(self.expData)
-        self.simInt, b = self.interpData(self.simMask)
+        Args:
+            None
+
+        Returns:
+            Sasmodels plot/sub plots using interpolated data
+        """
+        self.expInt, a = self.interpData(None, self.expData)
+        self.simInt, b = self.interpData(self.optimSim)
         self.residual = abs(self.expInt.data - self.simInt.data)
 
         plt.figure()
@@ -404,26 +358,32 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         return
 
     def sectorCompPlot(self, exp, sim, pltErr=0):
+        """Plots vertical, horizontal and radially averaged sectors from experimental
+        and modelled data.
 
-        #        q, binave, errave = ansect.sector(self., centre, width, '0', describer = None)
+        Args:
+            exp: 2D sasmodels object of experimental data
+            sim: 2D sasmodels object of model data
+            pltErr (optional): default = 0. Set to 1 to plot with errorbars.
+            Errorbars are not valid for interpolated data.
 
+        Returns:
+            Subplots of vertical, horizontal and radially averaged sectors
+        """
         expVertq, expVertI, expVerterr = ansect.sector(
             exp, 0, np.pi/20, '0', describer=None)
         simVertq, simVertI, simVerterr = ansect.sector(
             sim, 0, np.pi/20, '0', describer=None)
-        # print(np.nansum((((expVertI-simVertI) / expVerterr)**2))/len(expVertI))
 
         expHorizq, expHorizI, expHorizerr = ansect.sector(
             exp, np.pi/2, np.pi/20, '0', describer=None)
         simHorizq, simHorizI, simHorizerr = ansect.sector(
             sim, np.pi/2, np.pi/20, '0', describer=None)
-        # print(np.nansum(((expHorizI-simHorizI) / expHorizerr)**2)/len(expHorizI))
 
         expq, expI, experr = ansect.sector(
             exp, np.pi/2, np.pi, '0', describer=None)
         simq, simI, simerr = ansect.sector(
             sim, np.pi/2, np.pi, '0', describer=None)
-        # print(np.nansum(((expI-simI) / experr)**2)/len(expI))
 
         if pltErr == 1:
             fig = plt.figure(figsize=[8.5, 3], dpi=150)
@@ -436,11 +396,13 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
                      label='simVert')
             ax1.set_xscale('log')
             ax1.set_yscale('log')
+            print(expVerterr)
             ax1.legend()
             ax1.minorticks_off()
 
             ax2 = fig.add_subplot(1, 3, 2)
-            ax2.errorbar(expHorizq, expHorizI, yerr=expHorizerr, marker='o', markersize=2, markerfacecolor=[0, 0, 0], linestyle='',
+            ax2.errorbar(expHorizq, expHorizI, yerr=expHorizerr,
+                         marker='o', markersize=2, markerfacecolor=[0, 0, 0], linestyle='',
                          label='dataHoriz')
             ax2.plot(simHorizq, simHorizI, marker='o', markersize=2, markerfacecolor=[0, 0, 0], linestyle='',
                      label='simHoriz')
@@ -450,8 +412,8 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
             ax2.minorticks_off()
 
             ax3 = fig.add_subplot(1, 3, 3)
-            ax3.plot(expq, expI, marker='o', markersize=2, markerfacecolor=[
-                     0, 0, 0], linestyle='', label='dataRad')
+            ax3.errorbar(expq, expI, yerr=experr,
+                         marker='o', markersize=2, markerfacecolor=[0, 0, 0], linestyle='', label='dataRad')
             ax3.plot(simq, simI, marker='o', markersize=2, markerfacecolor=[
                      0, 0, 0], linestyle='', label='simRad')
             ax3.set_xscale('log')
@@ -470,7 +432,6 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
             ax1.set_yscale('log')
             ax1.legend()
             ax1.minorticks_off()
-#            plt.xticks(fontsize=8)
 
             ax2 = fig.add_subplot(1, 3, 2)
             ax2.plot(expHorizq, expHorizI, marker='', markersize=2, markerfacecolor=[0, 0, 0], linestyle='-',
@@ -481,7 +442,6 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
             ax2.set_yscale('log')
             ax2.legend()
             ax2.minorticks_off()
-#            plt.xticks(fontsize=8)
 
             ax3 = fig.add_subplot(1, 3, 3)
             ax3.plot(expq, expI, marker='', markersize=2, markerfacecolor=[
@@ -493,35 +453,34 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
             ax3.legend()
             ax3.minorticks_off()
             plt.show()
-#            plt.xticks(fontsize=8)
-#            plt.savefig('../2d_simFits/fitPlots/' + self.expData.sample[0][0:-1] + self.expData.shear[0][0:4] +'sectors.png')
 
         return
 
     def annularCompPlot(self, exp, sim, pltErr=0):
+        """Plot annulus of experimental and modelled data.
 
-        #        q, binave, errave = ansect.sector(self., centre, width, '0', describer = None)
+        Args:
+            exp: 2D sasmodels object of experimental data
+            sim: 2D sasmodels object of model data
+
+        Returns:
+            Plot of experiment and model annulus
+        """
 
         expVertq, expVertI, expVerterr = ansect.annular(exp, radius=0.07, thx=0.01)
         simVertq, simVertI, simVerterr = ansect.annular(sim, radius=0.07, thx=0.01)
 
-#        if pltErr == 0:
         fig = plt.figure(figsize=[3.64*2, 2.48*2])
         ax = fig.add_axes([1, 1, 1, 1])
 
         ax.scatter(expVertq, expVertI, marker='o', label='data')
-
         ax.scatter(simVertq, simVertI, marker='o', label='sim')
-#            ax1.set_xscale('log')
-#            ax1.set_yscale('log')
         ax.legend()
         ax.minorticks_off()
-#        plt.savefig('../2d_simFits/fitPlots/' + self.expData.sample[0][0:-1] + self.expData.shear[0][0:4] +'annulus.png', dpi=150, orientation='landscape')
+
         plt.rc('axes', linewidth=1.5)
         plt.rc('axes', grid=False)
         plt.rc('axes', labelsize='small')
-        #plt.rc('axes', titlesize = 'large')
-        #plt.rc('axes', titlelocation = 'center')
 
         # Font
         plt.rc('font', family='sans-serif')
@@ -529,7 +488,14 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         plt.rc('font', size=14)
 
     def surfacePlot(self, zzq):
+        """3D plot.
 
+        Args:
+            zzq: grid of interpolated intensity
+
+        Returns:
+            surface plot
+        """
         plt.rcParams["figure.figsize"] = 12.8, 9.6
         # Normalize the colors based on Z value
         norm = plt.Normalize(zzq.min(), zzq.max())
@@ -541,33 +507,35 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         return
 
     def objFunc(self, p_guess, p_list):
+        """Objective function minimised during optimisation.
 
-        # Least--squares method
-        # Defines an objective funciton to minimize. This is a reduced chi squared statistic
+        This is defined as the reduced chi**2 statistic between experimental data and
+        modelled data. Uses Levenberg--Marquardt algorithm by default as defined in code.
+
+        Args:
+            p_guess: List of initial guesses
+            p_lsit: list of fitting parameters
+
+        Returns:
+            reduced chi**2 array
+        """
         # =============================================================================
 
-        #        print('objFunc called')
-        # print(dict(zip(p_list, p_guess)))
         dof = len(self.expData.q_data) - len(p_guess)
-#        print(dof)
 
-#        bandName = p_list[0]
-#        bandVal = p_guess[0]
-
+        # List of parameters that must be consistent between both bands
         omni_pars = ['scale', 'background', 'radius', 'radius_pd',
                      'radius_effective', 'volfraction']
 
-        if 'bandVal' not in p_list and self.bandVal == 1:  # don't need to update static
-            print('option 1')
+        if 'bandVal' not in p_list and self.bandVal == 1:  # don't need static
             self.pars.update(dict(zip(p_list, p_guess)))
-            # self.pars.update(p_guess)
             sim = self.calculator(**self.pars)
+
             print(dict(zip(p_list, p_guess)))
 
         elif any(item in omni_pars for item in p_list):  # need to update static
-            #            print('option 2')
-            if 'bandVal' in p_list:  # fitting over bandval, need to remove from dicitonary before updating pars
-
+            # fitting over bandval, need to remove from dicitonary before updating pars
+            if 'bandVal' in p_list:
                 self.pars.update(dict(zip(p_list, p_guess)))
                 del self.pars['bandVal']
 
@@ -575,21 +543,18 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
                 staticDict = {}
                 for keys, vals in hold.items():
                     if keys in omni_pars:
-                        #                        staticDict.update(dict(items = p_guess[idx]))
                         staticDict.update({keys: vals})
                     else:
                         continue
 
                 self.staticPars.update(staticDict)
-#                print(self.staticPars)
-
-#                simShear = self.calculator(**self.pars)
-#                simStatic = self.calculator(**self.staticPars)
 
                 sim = p_guess[p_list.index('bandVal')]*self.calculator(**self.pars) + \
                     (1 - p_guess[p_list.index('bandVal')])*self.calculator(**self.staticPars)
+
                 print(dict(zip(p_list, p_guess)))
 
+            # not fitting over bandval, use object defined value
             elif 'bandVal' not in p_list:
                 #                print('option 3')
                 self.pars.update(dict(zip(p_list, p_guess)))
@@ -598,22 +563,22 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
                 staticDict = {}
                 for keys, vals in hold.items():
                     if keys in omni_pars:
-                        #                        staticDict.update(dict(items = p_guess[idx]))
                         staticDict.update({keys: vals})
                     else:
                         continue
 
                 self.staticPars.update(staticDict)
-#                print(self.staticPars)
-
-#                simShear = self.calculator(**self.pars)
-#                simStatic = self.calculator(**self.staticPars)
 
                 sim = self.bandVal*self.calculator(**self.pars) + \
                     (1 - self.bandVal)*self.calculator(**self.staticPars)
 
         else:  # only fitting pars present, no need to update static
             #            print('option 4')
+            try:
+                self.simStatic
+            except:
+                self.simStatic = self.calculator(**self.staticPars)
+
             if 'bandVal' in p_list:
 
                 self.pars.update(dict(zip(p_list, p_guess)))
@@ -621,22 +586,15 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 
                 sim = p_guess[p_list.index('bandVal')]*self.calculator(**self.pars) + \
                     (1 - p_guess[p_list.index('bandVal')])*self.simStatic
-                print(dict(zip(p_list, p_guess)))
+                # print(dict(zip(p_list, p_guess)))
 
             elif 'bandVal' not in p_list:
 
                 self.pars.update(dict(zip(p_list, p_guess)))
 #                simShear = self.calculator(**self.pars)
 
-                sim = self.bandVal*self.calculator(**self.pars) + (1 - self.bandVal)*self.simStatic
-
-#
-#        self.pars.update(dict(zip(p_list[1:], p_guess[1:])))
-# self.pars.update(dict(zip(p_list, p_guess)))
-#        simShear = self.calculator(**self.pars)
-#
-#
-#        sim = bandVal*simShear + (1 - bandVal)*self.simStatic
+                sim = self.bandVal*self.calculator(**self.pars) + \
+                    (1 - self.bandVal)*self.simStatic
 
         err = ((((self.expData.data - sim)**2 / self.expData.err_data**2)))/dof
 #        print(np.nansum((  ((  (self.expData.data - sim)**2 / self.expData.err_data**2)))))
@@ -648,177 +606,80 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 # End defintion of classes
 # =============================================================================
 
+#############################################################################
+
+
+def input_sample_check(conc, shear, id):
+    """Check that conc and shear match with that defined by supplied index"""
+    path = '../'
+    file = '/expDataFiles.csv'
+
+    os.path.isfile(path + file)
+    exp = pd.read_csv(path+file, index_col='index')
+
+    shear_raw = exp.loc[id, 'shear']
+    sample_raw = exp.loc[id, 'sample']
+
+    for idx, char in enumerate(shear_raw):
+        if char != ' ':
+            continue
+        else:
+            shearIdx = idx
+    #            print(char)
+            break
+
+    for idx, char in enumerate(sample_raw):
+        if char != 'w':
+            continue
+        else:
+            sampleIdx = idx
+    #            print(char)
+            break
+
+    # print(shearIdx)
+    x = shear_raw[0:shearIdx]
+    y = sample_raw[0:sampleIdx]
+
+    if conc != y or shear != x:
+        raise Exception('Conc or shear mismatch')
+    else:
+        print('Sample input matches')
+
+    return
 
 #############################################################################
 
 
-def buildPars(listInfo):
+def build_save_location(conc, shear_f):
+    """Build path string to folder where model data and statistics should be saved."""
+    if shear_f == '0':
+        location = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_static/'.format(
+            conc=conc)
+    else:
+        location = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_{shear}ps/'.format(
+            conc=conc, shear=shear_f)
 
-    #
-    # =============================================================================
-
-    # Linspace info: parameter, [min,max,numPts]
-
-    # Build a list of dictionaries containing all combos
-
-    numParas = np.shape(listInfo)[0]
-
-    paras = []
-    lists = []
-
-    paraInfo = {}
-
-    i = 0
-
-    while i < numParas:
-        paras.append(listInfo[i][0][0])
-        (numList, step) = np.linspace(listInfo[i][1][0],
-                                      listInfo[i][1][1], listInfo[i][1][2], retstep='true')
-
-#        lists.append( numList[1:-1] )
-        lists.append(numList)
-
-        paraInfo.update({listInfo[i][0][0] + '_npts': listInfo[i]
-                         [1][2], listInfo[i][0][0] + '_steps': step})
-
-        i = i+1
-
-    paraComb = list(itertools.product(*lists))
-    paraRep = list(itertools.repeat(paras, len(paraComb)))
-
-    updatePars = []
-
-    print(paraInfo)
-
-    for i in range(len(paraComb)):
-        updatePars.append(dict(zip(paraRep[i], paraComb[i])))
-
-    return updatePars, paraInfo
+    return location
 
 #############################################################################
 
 
 def fitInput(fitChoose):
-
-    #
-    # =============================================================================
-
+    """Build p_list from fitChoose"""
     p_list = []
-    p_guess = []
-    p_bounds = ([], [])
-    p_num = []
-
+    print('updated')
     for keys, values in fitChoose.items():
-        if values[0] == 1:
+        if values == 1:
             p_list.append(keys)
-            p_guess.append(values[1])
-            p_bounds[0].append(values[2])
-            p_bounds[1].append(values[3])
-            p_num.append(values[4])
         else:
             continue
-    return p_list, p_guess, p_bounds, p_num
-
-
-#############################################################################
-
-
-def fitInput_V2(fitChoose):
-
-    #
-    # =============================================================================
-
-    p_list = []
-    p_guess = []
-
-    for keys, values in fitChoose.items():
-        if values[0] == 1:
-            p_list.append(keys)
-            p_guess.append(values[1])
-        else:
-            continue
-    return p_list, p_guess, p_bounds, p_num
+    return p_list
 
 #############################################################################
-
-
-def simCalc(parsUpdate, sans):
-
-    #
-    # =============================================================================
-
-    scatloop = []
-
-    # go through all fitting combos, update dictionary and calculate scattering for each
-    # returns column of intensity vals for each calc
-
-    for i, gridVals in enumerate(parsUpdate):
-        sans.pars.update(gridVals)
-        scatloop.append(sans.calculator(**sans.pars))
-        print(str(i+1) + ' of ' + str(len(parsUpdate)))
-
-    return scatloop
-
-#############################################################################
-
-
-def errorCalc(listInfo, scatloop, parsUpdate, paraInfo, sans):
-
-    #
-    # =============================================================================
-
-    dof = len(sans.expData.q_data) - len(listInfo)
-
-    res = [sum((abs((sans.expData_sort[:, 2] - sims))/sims) / dof) for sims in scatloop]
-    # res = [sum((abs((sans.expData_sort[:,2] - sims))/(sans.expData_sort[:,2]*0.5+sims*0.5)) / dof) for sims in scatloop]
-    chi2 = [sum((((sans.expData_sort[:, 2] - sims)**2)/sims) / dof) for sims in scatloop]
-
-    # minRes = [np.amin(zzqResSum) for set in range(np.shape(zzqRes)[0])]
-    minResI = np.argmin(res)
-    minChi2I = np.argmin(chi2)
-
-    stats = [[res, minResI], [chi2, minChi2I]]
-
-    # print(absMinResI)
-
-    # print(parsUpdate[absMinResI])
-
-    listInfo2 = []
-
-    for para, vals in parsUpdate[minResI].items():
-        listInfo2.append([[para], [vals - paraInfo[para + '_steps'], vals +
-                                   paraInfo[para + '_steps'], paraInfo[para + '_npts']]])
-
-    minPars = parsUpdate[minResI]
-
-    return listInfo2, stats, minPars
-
-#############################################################################
-
-
-def getFilenames(csvFilename):
-
-    #
-    # =============================================================================
-
-    files = []
-
-    with open(csvFilename) as csv_file:
-        reader = csv.DictReader(csv_file, fieldnames=['index', 'filename'])
-        iterRows = iter(reader)
-        next(iterRows)
-        for row in iterRows:
-            files.append(row['filename'])
-    return files
-
-#############################################################################
-# To replace getFilenames?
 
 
 def files_list_reduce(filename, fieldnames):
-    """ Creat array of input reduction settings """
-#
-# =============================================================================
+    """ Create array of input reduction settings """
 
     parameters = []
     with open(filename) as csv_file:
@@ -839,10 +700,6 @@ def files_list_reduce(filename, fieldnames):
 
 def evaluate_files_list(numbers):
     """ Needed for FilesToReduce, see below """
-
-#
-# =============================================================================
-
     expanded = []
     for number in numbers.split(","):
         if "-" in number:
@@ -858,9 +715,6 @@ def evaluate_files_list(numbers):
 
 def files_to_reduce(parameters, evaluate_files):
     """ Create list of the files to reduce """
-#
-# =============================================================================
-
     files_to_reduce = []
     sample = []
     shear = []
@@ -881,38 +735,82 @@ def files_to_reduce(parameters, evaluate_files):
 #############################################################################
 
 
-def plot(sim, zzq, bounds):
+def extract_sector(sans, arg1, arg2, description):
+    """Extract sector for experimental and modelled data and calculate chi_2.
 
-    # DEPRICIATED
+    Args:
+        sans: 2D sasmodels data object
+        arg1: centre of sector
+        arg2: width of sector
+        description: Describe the sector, eg. "vertical"
 
-    plt.figure(figsize=[6.3, 4.08], dpi=200)
-    plt.pcolormesh(sim.xxq, sim.yyq, zzq, cmap='jet',
-                   vmin=bounds[0], vmax=bounds[1], norm=matplotlib.colors.LogNorm())
-    plt.title('')
-    # set the limits of the plot to the limits of the data
-    plt.axis([sim.xxq.min(), sim.xxq.max(), sim.yyq.min(), sim.yyq.max()])
-    plt.colorbar()
-    # plt.pcolormesh(sim.xxq, sim.yyq, zMask[0], vmin = vmin, vmax=vmax, norm=matplotlib.colors.LogNorm())
+    Returns:
+        string containing chi_2 and description
+    """
+    q_exp, I_exp, err_exp = ansect.sector(sans.expData, arg1, arg2)
+    q_sim, I_sim, err_sim = ansect.sector(sans.simData, arg1, arg2)
+
+    chi_2 = str(round(np.nansum((((I_exp-I_sim)/err_exp)**2)/len(q_exp)), sans.dp))
+    stat = 'reduced chi2 of ' + description + ' sector: ' + chi_2
+
+    return stat
+
+#############################################################################
+
+
+def extract_annulus(sans, arg1, arg2, description):
+    """Extract annulus for experimental and modelled data and calculate chi_2.
+
+    Args:
+        sans: 2D sasmodels data object
+        arg1: radius of annulus
+        arg2: thickness of annulus
+        description: Describe the annulus
+
+    Returns:
+        string containing chi_2 and description
+    """
+
+    q_exp, I_exp, err_exp = ansect.annular(sans.expData, radius=arg1, thx=arg2)
+    q_sim, I_sim, err_sim = ansect.annular(sans.simData, radius=arg1, thx=arg2)
+
+    chi_2 = str(round(np.nansum((((I_exp-I_sim)/err_exp)**2)/len(q_exp)), sans.dp))
+    stat = 'reduced chi2 of ' + description + ': ' + chi_2
+
+    return stat
 
 #############################################################################
 
 
 def save(sans, describer, minParams, minPars, stats, location, fitInfo):
+    """Save modelled data and statistics
 
-    #
-    # =============================================================================
+    Args:
+        sans: 2D sasmodels object
+        describer: String to be added to file name
+        minParams: Full parameter dictionary
+        minPars: Values of fitted parameters
+        stats: Fitting statistics
+        location: File path where files will be saved
+        fitInfo: Information about termination condition and fitting algorithm used
 
-    # location = '../2D_simFits/ReducedChi2_fits/20wt_CAPB_SLES_2wt_NaCl/'
-    describer = describer
+    Returns:
+        .dat file of modelled scattering data in qx, qy, I(q) format
+        .txt file of input parameters and statistics corresponding to minimum
+    """
+
+    while path.exists(location) == False:
+        print('error: file path does not exist. Please input a valid file path')
+        location = input('file path: ')
 
     for idx, char in enumerate(sans.expData.shear[0]):
         if char != ' ':
             continue
         else:
             shearIdx = idx
-#            print(char)
             break
 
+    # Build name for modelled scattering data
     shear = sans.expData.shear[0][0:shearIdx]
 
     name = sans.expData.sample[0] + '_' + shear + 'ps'
@@ -920,7 +818,12 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
     type1 = '.dat'
 
     saveName1 = name + post1 + describer + '_'
+    versionNum1 = input("Input a version number: ")
 
+    # Write modelled scattering data to 3 column dat file
+    write_3_column(location + saveName1 + versionNum1 + type1, sans)
+
+    # Build name for modelled scattering data statistics
     post2 = '_simInfo'
     type2 = '.txt'
 
@@ -928,6 +831,7 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
 
     output = []
 
+    # Build output file
     output.append('qmin = ' + str(sans.qmin))
     output.append('ftol = ' + str(fitInfo[0]))
     output.append('method = ' + str(fitInfo[1]))
@@ -954,37 +858,14 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
         output.append(str(key))
 
     output.append('Returned_the_following_goodness_of_fit_measures:')
-    # output.append(chi2)
-
     output = output + stats
     output.append(str(datetime.datetime.now()))
-#    print(output)
 
-    while path.exists(location) == False:
-        print('error: file path does not exist. Please input a valid file path')
-        location = input('file path: ')
-
-    if path.exists(location + saveName2 + type2):
-        versionNum1 = input("Input a version number: ")
-        # versionNum1 = 'R2'
-        with open(location + saveName2 + versionNum1 + type2, 'w') as file:
-            for lines in output:
-                file.write(lines)
-                file.write("\n")
-    else:
-        versionNum1 = input("Input a version number: ")
-        # versionNum1 = 'R2'
-        with open(location + saveName2 + versionNum1 + type2, 'w') as file:
-            for lines in output:
-                file.write(lines)
-                file.write("\n")
-
-    if path.exists(location + saveName1 + type1):
-        # versionNum = input("Input a version number: ")
-        write_3_column(location + saveName1 + versionNum1 + type1, sans)
-
-    else:
-        write_3_column(location + saveName1 + versionNum1 + type1, sans)
+    # Write output to txt file
+    with open(location + saveName2 + versionNum1 + type2, 'w') as file:
+        for lines in output:
+            file.write(lines)
+            file.write("\n")
 
     print('file was saved with filename: ' + saveName1 + versionNum1 + type1)
     return
@@ -993,9 +874,15 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
 
 
 def write_3_column(filename, sans):
-    #
-    # =============================================================================
+    """Write three column txt file.
 
+    Args:
+        filename: full file path to where the file will be saved
+        sans: 2D sasmodels data object
+
+    Returns:
+        .dat file of modelled scattering data in qx, qy, I(q) format
+    """
     with open(filename, 'wt') as fh:
         fh.write("Qx  Qy  I\n")
         for x, y, z in zip(sans.expData.qx_data, sans.expData.qy_data, sans.optimSim):
@@ -1004,50 +891,18 @@ def write_3_column(filename, sans):
 #############################################################################
 
 
-def sectPlot(sans):
-
-    #
-    # =============================================================================
-
-    qxy = np.vstack((sans.simInt.qx_data, sans.simInt.qy_data))
-    simData = np.vstack((qxy, sans.simInt.data))
-    simData = np.transpose(simData)
-
-    eqxy = np.vstack((sans.expInt.qx_data, sans.expInt.qy_data))
-    expData = np.vstack((qxy, sans.expInt.data))
-    expData = np.transpose(expData)
-
-    [dataVertBin, dataVertAve] = ansect.sector(expData, 0, np.pi/20)
-    [simVertBin, simVertAve] = ansect.sector(simData, 0, np.pi/20)
-
-    [dataHorizBin, dataHorizAve] = ansect.sector(expData, np.pi/2, np.pi/20)
-    [simHorizBin, simHorizAve] = ansect.sector(simData, np.pi/2, np.pi/20)
-
-    [dataBin, dataAve] = ansect.sector(expData, np.pi/2, np.pi)
-    [simBin, simAve] = ansect.sector(simData, np.pi/2, np.pi)
-
-    plt.figure()
-    plt.loglog(dataVertBin, dataVertAve, label='dataVert')
-    plt.loglog(simVertBin, simVertAve, label='simVert')
-    plt.legend()
-
-    plt.figure()
-    plt.loglog(dataHorizBin, dataHorizAve, label='dataHoriz')
-    plt.loglog(simHorizBin, simHorizAve, label='simHoriz')
-    plt.legend()
-
-    plt.figure()
-    plt.loglog(dataBin, dataAve, label='data')
-    plt.loglog(simBin, simAve, label='sim')
-    plt.legend()
-
-    return
-
-#############################################################################
-
-
 def loadDict(build, popPars):
+    """Load parameter dictionaries from saved txt file.
 
+    **May break depending on when the txt file was saved due to formatting differences.
+
+    Args:
+        build: File path to txt file
+        popPars: List of parameters to remove
+
+    Returns:
+        pars and pars_static dictionaries
+    """
     data = pd.read_csv(build,
                        sep='=', skiprows=4, nrows=27, header=None)
     pars = {}
@@ -1062,13 +917,9 @@ def loadDict(build, popPars):
             vals.append(float(id[1][1][0:-1]))
 
     pars = (dict(zip(vars, vals)))
-
-    # %% codecell
     data_static = pd.read_csv(build,
                               sep='=', skiprows=33, nrows=26, header=None)
-    # %% codecell
-    # print(B)
-    # dir(vals)
+
     pars_static = {}
     vars = []
     vals = []
@@ -1079,10 +930,8 @@ def loadDict(build, popPars):
         else:
             vars.append(id[1][0])
             vals.append(float(id[1][1][0:-1]))
-            # print(id[1][0])
 
     pars_static = (dict(zip(vars, vals)))
-    # print(pars_static.keys())
     print(popPars)
 
     for par in popPars:
@@ -1090,98 +939,4 @@ def loadDict(build, popPars):
         pars_static.pop(par)
 
     return pars, pars_static
-
-#############################################################################
-
-
-def update_dict_from_file(conc, shear_u, version, popPars, bandVal_man):
-
-    if shear_u == '0':
-        location_u = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_static/'.format(
-            conc=conc)
-    else:
-        location_u = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_{shear}ps/'.format(
-            conc=conc, shear=shear_u)
-
-    fileName = '{conc}wt_{shear}ps_simInfo_{version}.txt'.format(
-        conc=conc, shear=shear_u, version=version)
-
-    while os.path.isfile(location_u + fileName) == False:
-        if fileName == '':
-            use2update = 'n'
-            print('No file name supplied. Did not update dictionaries')
-            break
-        else:
-            print('error: file path does not exist. Please input a valid file path')
-            fileName = input('file path: ')
-
-    sim, static = loadDict(location_u + fileName, popPars)
-    updateBand = input('Would you like  to update band value as well? y/n [y]: ')
-    if updateBand == 'y' or updateBand == '':
-        bandVal_man = sim.pop('bandVal')
-    else:
-        popPars.append('bandVal')
-        sim.pop('bandVal')
-        bandVal_man = bandVal_man
-
-    return sim, static, bandVal_man
-
-#############################################################################
-
-
-def build_save_location(conc, shear_f):
-
-    if shear_f == '0':
-        location = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_static/'.format(
-            conc=conc)
-    else:
-        location = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_{shear}ps/'.format(
-            conc=conc, shear=shear_f)
-
-    return location
-
-#############################################################################
-
-
-def input_sample_check(conc, shear, id):
-    path = '/Users/jkin0004/Google Drive/University/PhD/Research/WLM rheo model/WLM ANSTO/WLM ANSTO data & code/2D sub D2O data & code'
-    file = '/expDataFiles.csv'
-
-    # os.path.isdir(path)
-    os.path.isfile(path + file)
-
-    exp = pd.read_csv(path+file, index_col='index')
-    # exp.set_index('index')
-    # print(exp.head)
-
-    shear_raw = exp.loc[id, 'shear']
-    sample_raw = exp.loc[id, 'sample']
-
-    for idx, char in enumerate(shear_raw):
-        if char != ' ':
-            continue
-        else:
-            shearIdx = idx
-    #            print(char)
-            break
-
-    for idx, char in enumerate(sample_raw):
-        if char != 'w':
-            continue
-        else:
-            sampleIdx = idx
-    #            print(char)
-            break
-
-    # print(shearIdx)
-    x = shear_raw[0:shearIdx]
-    y = sample_raw[0:sampleIdx]
-
-    # print(x+y)
-
-    if conc != y or shear != x:
-        raise Exception('Conc or shear mismatch')
-    else:
-        print('Sample input matches')
-
-    return
+    #############################################################################
