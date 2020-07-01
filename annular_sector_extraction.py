@@ -8,44 +8,6 @@ Created on Fri Jan 24 14:04:38 2020
 
 import numpy as np
 import math
-import rheoSANSFunctions_fitOpt_omni as rsf
-import matplotlib.pyplot as plt
-
-
-def extractLoop():
-    indexSelect = '6,15,24,34,43,62,71,83,95'
-
-    indexNums = rsf.evaluate_files_list(indexSelect)
-    describer = 'radAve'
-    saveSet = '1'
-
-    centre = np.pi/2
-    width = np.pi
-
-    radius = 0.07
-    thx = 0.01
-
-    sans = rsf.sans2d()
-    sans.qmin = 0.007
-
-    for nums in indexNums:
-        sans.getData(str(nums))
-
-        q, I_q, I_err = sector(sans.expData, centre=centre, width=width,
-                               save=saveSet, describer=describer)
-
-#        q_ann, I_q_ann = annular(sans.expData, radius= radius,thx= thx,
-#                                 save=saveSet, describer = describer)
-        del sans.expData
-        fig = plt.figure()
-
-        kwargs = {'xscale': 'log', 'yscale': 'log'}
-
-        ax = fig.add_axes([1, 1, 1, 1], **kwargs)
-
-        ax.errorbar(q, I_q, yerr=I_err, linestyle='', marker='o', markersize=1)
-
-    return
 
 
 def sector(dataSet, centre, width, save='0', describer=None):
@@ -57,7 +19,6 @@ def sector(dataSet, centre, width, save='0', describer=None):
     sectwid = width  # In radians
 
     # dataSet should be a sasView 2D data object
-    #data_sqrd = dataSet**2
     mag = dataSet.q_data  # q values
     sectang = []
 
@@ -154,19 +115,19 @@ def sector(dataSet, centre, width, save='0', describer=None):
 
 #    allerror = [err, seccrop_err, errtotal, errave]
 
-    if save == '1':
-        fileType = '.dat'
-        if dataSet.shear[0][0] == '0':
-            fileName = describer + '_' + str(dataSet.sample[0]) + '_' + 'static'
-        else:
-            fileName = describer + '_' + \
-                str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
-        location = '../2D_annular_sector_extraction/py_sect_radAve/'
-        fullName = location + fileName + fileType
-        with open(fullName, 'wt') as fh:
-            fh.write("q  I(q)  err_I\n")
-            for x, y, z in zip(bins, binave, errave):
-                fh.write("%g  %g  %g\n" % (x, y, z))
+    # if save == '1':
+    #     fileType = '.dat'
+    #     if dataSet.shear[0][0] == '0':
+    #         fileName = describer + '_' + str(dataSet.sample[0]) + '_' + 'static'
+    #     else:
+    #         fileName = describer + '_' + \
+    #             str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
+    #     location = '../2D_annular_sector_extraction/py_sect_radAve/'
+    #     fullName = location + fileName + fileType
+    #     with open(fullName, 'wt') as fh:
+    #         fh.write("q  I(q)  err_I\n")
+    #         for x, y, z in zip(bins, binave, errave):
+    #             fh.write("%g  %g  %g\n" % (x, y, z))
 
     return bins, binave, errave
 
@@ -245,15 +206,15 @@ def annular(dataSet, radius, thx, save='0', describer=None):
     erravea = errtotala/binindexa
 #    print(errave)
 
-    if save == '1':
-        fileType = '.dat'
-        fileName = describer + '_' + \
-            str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
-        location = '../2D_annular_sector_extraction/py_annular/'
-        fullName = location + fileName + fileType
-        with open(fullName, 'wt') as fh:
-            fh.write("q  I(q)  err_I\n")
-            for x, y, z in zip(binsa, binavea, binavea):
-                fh.write("%g  %g  %g\n" % (x, y, z))
+    # if save == '1':
+    #     fileType = '.dat'
+    #     fileName = describer + '_' + \
+    #         str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
+    #     location = '../2D_annular_sector_extraction/py_annular/'
+    #     fullName = location + fileName + fileType
+    #     with open(fullName, 'wt') as fh:
+    #         fh.write("q  I(q)  err_I\n")
+    #         for x, y, z in zip(binsa, binavea, binavea):
+    #             fh.write("%g  %g  %g\n" % (x, y, z))
 
     return binsa, binavea, erravea
