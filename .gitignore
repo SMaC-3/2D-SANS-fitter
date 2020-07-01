@@ -1,39 +1,12 @@
 .DS_store
+25wt_100ps_add.dat
 Python_oldCode/
-AnnularSectorExtraction.py
-#AnnularSectorExtraction_V2.py
-BBY0036279_2D_2.0_18.0_CNCRw12_100ps.dat
-BBY0036279_2D_2.0_18.0_CNCRw12_100ps.h5
-CodeSummary.txt
-#plot_multi_1D.py
-#plot_sector.py
-#plot_annular.py
-#plot_multi_2D.py
 plot_seaborn.py
-rheoSANSFunctions_V1.py
-rheoSANSFunctions_fitOpt_direct.py
-rheoSANSFunctions_fitOpt_direct_band.py
-rheoSANSFunctions_fitOpt_interp.py
-#rheoSANSFunctions_fitOpt_lsq.py
-#rheoSANS_2Dsim.py
 rheoSANS_bandPlot.py
-rheoSANS_fitOpt_direct.py
-rheoSANS_fitOpt_direct_band.py
-rheoSANS_fitOpt_direct_band_290320.py
-rheoSANS_fitOpt_interp.py
-rheoSANS_fitOpt_lsq.py
 rheoSANS_plot.py
 rheoSANS_sigBandPlot.py
-#sans1d.py
-#sans1d_lsq.py
-#sans1d_run.py
 
-*.png
-*.dat
-*.ipynb
-misc.py
 
-distributionComp.py
 
 #GitHub python .gitignore template
 # Byte-compiled / optimized / DLL files
