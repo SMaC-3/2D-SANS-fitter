@@ -6,17 +6,17 @@ Created on Thu Mar 19 15:08:51 2020
 @author: jkin0004
 """
 
-import rheoSANSFunctions_fitOpt_omni as rsf
+import rheoSANS_fitOpt_Functions as rsf
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-indexSelect = '35-44'
+indexSelect = '64'
 
 indexNums = rsf.evaluate_files_list(indexSelect)
 
 sans = rsf.sans2d()
-sans.qmin = 0.01
+sans.qmin = 0.04
 grids = []
 
 q = np.linspace(-sans.qmax, sans.qmax, sans.nq)
@@ -55,6 +55,8 @@ cmToInch = 0.393701
 
 for i in range(len(indexNums)):
     plt.figure(figsize=[5.1, 4.08], dpi=200)
+    # plt.plot([-0.045, 0.045], [-0.19, 0.19], color='black')
+    # plt.plot([-0.045, 0.045], [0.19, -0.19], color='black')
     plt.pcolormesh(xxq, yyq, grids[i], cmap='jet', vmin=2,
                    vmax=vmax, norm=mcolors.LogNorm())
     plt.title(indexNums[i])
