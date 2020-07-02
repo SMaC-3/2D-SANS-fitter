@@ -216,7 +216,7 @@ def annular(dataSet, radius, thx, save='0', describer=None):
     annul_err = annul_err[sortI]
 
     # Data binning
-    nbsa = 200
+    nbsa = 100
     deltheta = 2*np.pi/nbsa
     binsa = np.linspace(-np.pi/2, 3*np.pi/2, nbsa)
 
@@ -257,4 +257,4 @@ def annular(dataSet, radius, thx, save='0', describer=None):
                 fh.write("%g  %g  %g\n" % (x, y, z))
 
     # return binsa, binavea, erravea
-    return annul_x, annul_y, annul_I
+    return annul_x, annul_y, annul_I, I_ann
