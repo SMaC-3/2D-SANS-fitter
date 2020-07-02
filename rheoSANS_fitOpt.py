@@ -6,11 +6,13 @@ Created on Fri 24 Apr 2020
 @author: Joshua King
 
 """
+# %% codecell
 import numpy as np
 from scipy.optimize import least_squares
 import rheoSANS_fitOpt_Functions as rsf
 import os
 
+# %% codecell
 # =============================================================================
 # User input
 # =============================================================================
@@ -30,14 +32,16 @@ import os
 # of each band.
 # =============================================================================
 
-pars2sim = ({'scale': 0.841778,
-             'background': 0.38474,
+# 0.163
+
+pars2sim = ({'scale': 0.8214,
+             'background': 0.4117,
              'sld': -0.4,
              'sld_solvent': 6.3,
              'radius': 19.82,
-             'radius_pd': 0,  # 0.163,
+             'radius_pd': 0.163,
              'radius_pd_n': 35.0,
-             'length': 187.37694,
+             'length': 199.8676,
              'length_pd': 0.0,
              'length_pd_n': 35.0,
              'theta': 90.0,
@@ -45,7 +49,7 @@ pars2sim = ({'scale': 0.841778,
              'theta_pd_n': 35.0,
              'theta_pd_type': 'gaussian',
              'phi': 0.0,
-             'phi_pd': 17.81125,
+             'phi_pd': 17.8518,
              'phi_pd_n': 35.0,
              'phi_pd_type': 'gaussian',
              'radius_effective_mode': 0.0,
@@ -57,12 +61,12 @@ pars2sim = ({'scale': 0.841778,
              'dielectconst': 80.2,
              'radius_pd_type': 'gaussian', })
 
-pars2static = ({'scale': 0.841778,
-                'background': 0.38474,
+pars2static = ({'scale': 0.8214,
+                'background': 0.4117,
                 'sld': -0.4,
                 'sld_solvent': 6.3,
                 'radius': 19.82,
-                'radius_pd': 0,  # 0.163,
+                'radius_pd': 0.163,
                 'radius_pd_n': 35.0,
                 'length': 91.472,
                 'length_pd': 0.0,
@@ -84,7 +88,7 @@ pars2static = ({'scale': 0.841778,
                 'dielectconst': 80.2,
                 'radius_pd_type': 'gaussian'})
 
-bandVal = 0.57276
+bandVal = 0.5732
 
 # =============================================================================
 # Identify experimental data to be used in fitting by referencing index in
@@ -105,10 +109,10 @@ location = rsf.build_save_location(conc, shear)
 # Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
 
-fitChoose = dict(scale=0,
+fitChoose = dict(scale=1,
                  background=1,
                  length=1,
-                 phi_pd=0,
+                 phi_pd=1,
                  bandVal=1,)
 
 p_list = rsf.fitInput(fitChoose)
@@ -256,3 +260,9 @@ def rheoSANS_fitOpt(options, saveOpt):
 
 
 out = rheoSANS_fitOpt(options, [])
+
+# %% codecell
+# projPath = '../2D_simFits/ReducedChi2_fits/25wt_CAPB_SLES_2wt_NaCl/25wt_100ps/25wt_100ps_simInfo_preF2.txt'
+# pars, pars_static = rsf.loadDict(projPath,[])
+# print(pars)
+# print(pars)
