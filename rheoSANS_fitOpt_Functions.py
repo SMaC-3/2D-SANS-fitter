@@ -214,11 +214,11 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         qy_grid = np.array(qy_grid)
         I_grid = np.array(I_grid)
 
-        bsq = np.sqrt(qx_grid**2 + qy_grid**2)
-        beamStop = (bsq < self.qmin)
-        I_grid = I_grid[~beamStop]
-        qx_grid = qx_grid[~beamStop]
-        qy_grid = qy_grid[~beamStop]
+        # bsq = np.sqrt(qx_grid**2 + qy_grid**2)
+        # beamStop = (bsq < self.qmin)
+        # I_grid = I_grid[~beamStop]
+        # qx_grid = qx_grid[~beamStop]
+        # qy_grid = qy_grid[~beamStop]
 
         interp = sasmodels.data.Data2D(x=qx_grid, y=qy_grid, z=I_grid)
         interp.err_data = np.array(list(itertools.repeat(0, len(qx_grid))))
@@ -257,8 +257,10 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         self.simImport_sort = np.array(
             sorted(self.simImport_masked, key=lambda col: (col[1], col[0])))
 
+        dz = np.array(list(itertools.repeat(0, len(self.simImport_sort[:, 0]))))
         self.simImport = sasmodels.data.Data2D(
-            x=self.simImport_sort[:, 0], y=self.simImport_sort[:, 1], z=self.simImport_sort[:, 2])
+            x=self.simImport_sort[:, 0], y=self.simImport_sort[:, 1],
+            z=self.simImport_sort[:, 2], dz=dz)
 
         return
 
