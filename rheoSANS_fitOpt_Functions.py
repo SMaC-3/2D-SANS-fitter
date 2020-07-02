@@ -12,7 +12,7 @@ import pandas as pd
 from scipy.interpolate import griddata
 import csv
 import matplotlib.pyplot as plt
-import matplotlib.colors
+# import matplotlib.colors
 from matplotlib import cm
 import itertools
 from os import path
@@ -23,7 +23,6 @@ import sasmodels.core
 import sasmodels.direct_model
 import sasmodels.data
 
-import annular_sector_extraction as ansect
 
 import datetime
 
@@ -38,7 +37,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
     def __init__(self):
 
         self.qmax = 0.19
-        self.qmin = 0.007
+        self.qmin = 0.04
         self.nq = 200
         self.skipRows = 4
         self.bandVal = 1
@@ -247,7 +246,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         parameters = files_list_reduce(csv_filename, fieldnames)
         fileName, sample, shear = files_to_reduce(parameters, indexSelect)
 
-        self.simName = '../2D_simFits/ReducedChi2_fits/' + fileName[0]
+        self.simName = '../2D_simFits/ReducedChi2_fits/allConc_bestFits/' + fileName[0]
 
         self.simImport_raw = np.loadtxt(self.simName, delimiter="  ", skiprows=self.skipRows)
         bsq = np.sqrt(self.simImport_raw[:, 0]**2 + self.simImport_raw[:, 1]**2)
@@ -667,7 +666,6 @@ def build_save_location(conc, shear_f):
 def fitInput(fitChoose):
     """Build p_list from fitChoose"""
     p_list = []
-    print('updated')
     for keys, values in fitChoose.items():
         if values == 1:
             p_list.append(keys)

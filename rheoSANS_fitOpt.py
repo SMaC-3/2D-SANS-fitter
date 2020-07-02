@@ -17,6 +17,17 @@ import os
 
 # =============================================================================
 # Set default parameter dictionaries
+# Pars2sim contains parameters to be passed to the cylinder@hayter-msa model for
+# the purpose of fitting a high shear, flow aligned band.
+# This is the dictionary iterated over in the fitting routine.
+# Initial guesses for fitting parameters are taken from this dictionary.
+#
+# Pars2static contains parameters for a static band. It is recommended that these
+# parameters are taken from fitting radially averaged static data with the
+# cylinder@hayter-msa model.
+#
+# "bandVal" is external to these dictionaries are is used to determine the proportions
+# of each band.
 # =============================================================================
 
 pars2sim = ({'scale': 0.841778,
@@ -73,8 +84,13 @@ pars2static = ({'scale': 0.841778,
                 'dielectconst': 80.2,
                 'radius_pd_type': 'gaussian'})
 
+bandVal = 0.57276
+
 # =============================================================================
-# Set sample specific variables
+# Identify experimental data to be used in fitting by referencing index in
+# csv file and setting expected concentration and shear rate for error check.
+# location will be user specific and will need to modified between users.
+# A simple modifcation would be to change this to the current file path.
 # =============================================================================
 
 indexSelected = ['77']
@@ -86,16 +102,14 @@ rsf.input_sample_check(conc, shear, int(indexSelected[0]))
 location = rsf.build_save_location(conc, shear)
 
 # =============================================================================
-# Select fitting parameters. Initial values taken from pars2sim dictionary
+# Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
 
 fitChoose = dict(scale=0,
-                 background=0,
+                 background=1,
                  length=1,
                  phi_pd=0,
-                 bandVal=0,)
-
-bandVal = 0.57276
+                 bandVal=1,)
 
 p_list = rsf.fitInput(fitChoose)
 p_guess = []
@@ -105,6 +119,9 @@ for pars in p_list:
     else:
         p_guess.append(pars2sim[pars])
 
+# =============================================================================
+# End user input
+# =============================================================================
 # =============================================================================
 # Defining input
 # =============================================================================
@@ -121,6 +138,8 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     # =============================================================================
     # Define items in options
+    # =============================================================================
+
     indexSelect = options[0]
     pars2sim = options[1]  # Update default pars with these
     pars2static = options[2]
@@ -131,6 +150,7 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     # =============================================================================
     # Define sans object and perform required methods
+    # =============================================================================
 
     sans = rsf.sans2d()  # Define sans object
     sans.qmin = 0.04  # set qmin
@@ -138,13 +158,16 @@ def rheoSANS_fitOpt(options, saveOpt):
     sans.dp = 4  # number of decimal points to which data will be saved
     print('band value = ' + str(sans.bandVal))
     sans.getData(indexSelect)  # get selected experimental data
-    sans.pars.update(pars2sim)  # update parameter dictionary with user input
-    sans.staticPars.update(pars2static)  # update static parameter dictionary with user input
+    # update parameter dictionaries with user input
+    sans.pars.update(pars2sim)
+    sans.staticPars.update(pars2static)
 
-    sans.makeCalc(sans.expData)  # make calculator using masked simulation object
+    # make calculator based on experimental qx, qy. Default resolution = 10%
+    sans.makeCalc(sans.expData)
 
     # =============================================================================
     # Define input parameters for optimiser
+    #  =============================================================================
 
     ftol = 1e-6
     # gtol = 1e-8
@@ -157,7 +180,9 @@ def rheoSANS_fitOpt(options, saveOpt):
     print(sans.staticPars)
 
     # =============================================================================
-    # Run optimiser
+    # Run optimiser. Define fitting parameters at termination and calculate chi^2_r.
+    # Calculate optimal model values and create 2D sasmodels object using this.
+    # =============================================================================
 
     if not p_list:
         optim = sans.objFunc(p_guess=p_guess, p_list=p_list)
@@ -169,9 +194,6 @@ def rheoSANS_fitOpt(options, saveOpt):
                               xtol=xtol, ftol=ftol, args=(p_list,))
         minPars = dict(zip(p_list, optim.x))
         chi2_reduced = ['reduced chi2: ' + str(round(np.sum(optim.fun), sans.dp))]
-
-    # =============================================================================
-    # Calculate statistics
 
     sans.pars.update(minPars)
     minPars_complete = sans.pars
@@ -188,6 +210,10 @@ def rheoSANS_fitOpt(options, saveOpt):
     sans.optimSim = optimSim
     sans.makeSimObj(optimSim)
 
+    # =============================================================================
+    # Calculate statistics of 1D extractions
+    # =============================================================================
+
     chi2_reduced.append(rsf.extract_sector(sans, 0, np.pi/20, 'vertical'))
     chi2_reduced.append(rsf.extract_sector(sans, np.pi/2, np.pi/20, 'horizontal'))
     chi2_reduced.append(rsf.extract_sector(sans, np.pi/2, np.pi, 'radial average'))
@@ -197,6 +223,7 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     # =============================================================================
     # Create plots
+    # =============================================================================
 
     # Plot non--interpolated experimental and model data
     sans.sasPlot(data=sans.expData, sim=optimSim)
@@ -208,6 +235,8 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     # =============================================================================
     # Save data
+    # =============================================================================
+
     os.system('afplay /System/Library/Sounds/Glass.aiff')
 
     saveOpt = []
@@ -222,7 +251,7 @@ def rheoSANS_fitOpt(options, saveOpt):
     return out
 
 # =============================================================================
-# Running least squares fitting function
+# Run least squares fitting function
 # =============================================================================
 
 
