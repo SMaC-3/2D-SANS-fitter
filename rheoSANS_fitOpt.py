@@ -34,14 +34,14 @@ import os
 
 # 0.163
 
-pars2sim = ({'scale': 0.8214,
-             'background': 0.4117,
+pars2sim = ({'scale':  0.82616,
+             'background': 0.48719,
              'sld': -0.4,
              'sld_solvent': 6.3,
              'radius': 19.82,
              'radius_pd': 0.163,
              'radius_pd_n': 35.0,
-             'length': 199.8676,
+             'length': 115,
              'length_pd': 0.0,
              'length_pd_n': 35.0,
              'theta': 90.0,
@@ -49,7 +49,7 @@ pars2sim = ({'scale': 0.8214,
              'theta_pd_n': 35.0,
              'theta_pd_type': 'gaussian',
              'phi': 0.0,
-             'phi_pd': 17.8518,
+             'phi_pd': 27.0,
              'phi_pd_n': 35.0,
              'phi_pd_type': 'gaussian',
              'radius_effective_mode': 0.0,
@@ -59,10 +59,15 @@ pars2sim = ({'scale': 0.8214,
              'temperature': 298.0,
              'concentration_salt': 0.38,
              'dielectconst': 80.2,
-             'radius_pd_type': 'gaussian', })
+             'radius_pd_type': 'gaussian'})
 
-pars2static = ({'scale': 0.8214,
-                'background': 0.4117,
+pars2sim.update({'scale': 0.7961741405758487,
+                 'background': 0.32943979774536214,
+                 'length': 102.1043511190572,
+                 'phi_pd': 30.9162563930588, })
+
+pars2static = ({'scale': 0.7961741405758487,
+                'background': 0.32943979774536214,
                 'sld': -0.4,
                 'sld_solvent': 6.3,
                 'radius': 19.82,
@@ -88,7 +93,22 @@ pars2static = ({'scale': 0.8214,
                 'dielectconst': 80.2,
                 'radius_pd_type': 'gaussian'})
 
-bandVal = 0.5732
+# No radial pd
+pars2sim.update({'radius_pd': 0})
+pars2static.update({'radius_pd': 0})
+
+# Fewer radial pd points
+# pars2sim.update({'radius_pd_n': 5.0})
+# pars2static.update({'radius_pd_n': 5.0})
+
+# Fewer phi pd points
+# pars2sim.update({'phi_pd_n': 20.0})
+#
+# # Fewer phi & theta pd points in static
+# pars2static.update({'phi_pd_n': 20.0})
+# pars2static.update({'theta_pd_n': 20.0})
+
+bandVal = 0.18726784412384337
 
 # =============================================================================
 # Identify experimental data to be used in fitting by referencing index in
@@ -97,10 +117,10 @@ bandVal = 0.5732
 # A simple modifcation would be to change this to the current file path.
 # =============================================================================
 
-indexSelected = ['77']
+indexSelected = ['72']
 
 conc = '25'  # concentration of sample to be fitted
-shear = '100'  # shear rate of sample to be fitted
+shear = '5'  # shear rate of sample to be fitted
 
 rsf.input_sample_check(conc, shear, int(indexSelected[0]))
 location = rsf.build_save_location(conc, shear)
@@ -261,7 +281,6 @@ def rheoSANS_fitOpt(options, saveOpt):
 
 out = rheoSANS_fitOpt(options, [])
 
-# %% codecell
 # projPath = '../2D_simFits/ReducedChi2_fits/25wt_CAPB_SLES_2wt_NaCl/25wt_100ps/25wt_100ps_simInfo_preF2.txt'
 # pars, pars_static = rsf.loadDict(projPath,[])
 # print(pars)

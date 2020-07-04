@@ -23,7 +23,7 @@ import sasmodels.core
 import sasmodels.direct_model
 import sasmodels.data
 
-
+import annular_sector_extraction as ansect
 import datetime
 
 
@@ -169,6 +169,63 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         return
 
     def interpData(self, data, dataSet=None):
+        """By default, this method takes I(q) data and interpolates this using qx, qy
+        from previously loaded expData. If dataSet is given instead, then qx, qy data
+        from that is used. Masks out q < qmin.
+
+        Args:
+            data, dataSet (optional)
+
+        Returns:
+            2D sasmodels object, zzq grid of interpolated values.
+        """
+
+        if dataSet != None:
+            zzq1 = griddata((dataSet.qx_data, dataSet.qy_data), dataSet.data,
+                            (self.xxq, self.yyq), method='linear')
+        else:
+            zzq1 = griddata((self.expData.qx_data, self.expData.qy_data),
+                            data, (self.xxq, self.yyq), method='linear')
+
+        bsq = np.sqrt(self.xxq**2 + self.yyq**2)
+        mask = (bsq < self.qmin)
+
+#        zzq = np.full_like(self.xxq, np.nan)
+        zzq = np.full_like(self.xxq, 0)
+        zzq[~mask] = zzq1[~mask]
+
+        qx_grid = []
+        qy_grid = []
+        I_grid = []
+
+        for vals in self.xxq:
+            for valss in vals:
+                qx_grid.append(valss)
+
+        for vals in self.yyq:
+            for valss in vals:
+                qy_grid.append(valss)
+
+        for vals in zzq:
+            for valss in vals:
+                I_grid.append(valss)
+
+        qx_grid = np.array(qx_grid)
+        qy_grid = np.array(qy_grid)
+        I_grid = np.array(I_grid)
+
+        bsq = np.sqrt(qx_grid**2 + qy_grid**2)
+        beamStop = (bsq < self.qmin)
+        I_grid = I_grid[~beamStop]
+        qx_grid = qx_grid[~beamStop]
+        qy_grid = qy_grid[~beamStop]
+
+        interp = sasmodels.data.Data2D(x=qx_grid, y=qy_grid, z=I_grid)
+        interp.err_data = np.array(list(itertools.repeat(0, len(qx_grid))))
+
+        return interp, zzq
+
+    def interpData_noMask(self, data, dataSet=None):
         """By default, this method takes I(q) data and interpolates this using qx, qy
         from previously loaded expData. If dataSet is given instead, then qx, qy data
         from that is used. Masks out q < qmin.
@@ -397,7 +454,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
                      label='simVert')
             ax1.set_xscale('log')
             ax1.set_yscale('log')
-            print(expVerterr)
+            # print(expVerterr)
             ax1.legend()
             ax1.minorticks_off()
 

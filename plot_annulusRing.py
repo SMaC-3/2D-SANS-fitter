@@ -15,7 +15,7 @@ sans.nq = 500
 sans.q = np.linspace(-sans.qmax, sans.qmax, sans.nq)
 sans.xxq, sans.yyq = np.meshgrid(sans.q, sans.q)
 sans.getSim('5')
-simInt, a = sans.interpData(None, sans.simImport)
+simInt, a = sans.interpData_noMask(None, sans.simImport)
 
 x, y, I, I_ann = ansect.annular(simInt, 0.07, 0.01)
 
