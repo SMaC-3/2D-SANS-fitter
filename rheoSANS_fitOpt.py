@@ -127,7 +127,7 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     # saveOpt = []
     # saveOpt = input("would you like to save? enter '1' for yes: ")
-    description = 'loop_preF1'
+    description = 'loop_preF2_50PDn'
 
     saveOpt = '1'
     if saveOpt == '1' or saveOpt == '':
@@ -262,17 +262,18 @@ bandVal = 0.18726784412384337
 # =============================================================================
 # Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
+# loop_preF2_50PDn
+files_load = ['15wt_10ps_simInfo_F2_50PDn.txt',
+              '15wt_25ps_simInfo_loop_preF2_50PDn.txt',
+              '15wt_50ps_simInfo_loop_preF2_50PDn.txt',
+              '15wt_75ps_simInfo_loop_preF2_50PDn.txt',
+              '15wt_100ps_simInfo_loop_preF2_50PDn.txt']
 
-files_load = ['20wt_50ps_simInfo_loop_preF1.txt',
-              '20wt_100ps_simInfo_loop_preF1.txt',
-              '20wt_200ps_simInfo_loop_preF1.txt',
-              '20wt_300ps_simInfo_loop_preF1.txt']
+indexSelected = ['46', '47', '48', '49', '50']
 
-indexSelected = ['64', '65', '66', '67']
-
-conc = '20'  # concentration of sample to be fitted
-preFit_shear = ['50', '100', '200', '300']
-shear = ['100', '200', '300', '500']  # shear rate of sample to be fitted
+conc = '15'  # concentration of sample to be fitted
+preFit_shear = ['10', '25', '50', '75', '100']
+shear = ['25', '50', '75', '100', '200']  # shear rate of sample to be fitted
 
 fitChoose = dict(scale=1,
                  background=1,
