@@ -11,13 +11,13 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.cm as cm
 import numpy as np
-import rheoSANSFunctions_fitOpt_omni as rsf
+import rheoSANS_fitOpt_Functions as rsf
 
 # Choose data to plot
-plot = "6,34,44,61,71,83"
+plot = "1, 3-7"
 
 # set path and return pathnames for data
-folder = '../2D_annular_sector_extraction/sect_radAve/'
+folder = '../2D_annular_sector_extraction/py_sect_radAve/'
 
 csv_filename = folder + 'radAve_expData.csv'
 fieldnames = ['index', 'filename', 'sample', 'shear']
@@ -33,12 +33,12 @@ for names in fileName:
 # load data
 data = []
 for names in pathName:
-    data.append(np.loadtxt(names, delimiter="\t", skiprows=1))
+    data.append(np.loadtxt(names, delimiter="  ", skiprows=1))
 
 
 # set path and return pathnames for sim fits
 
-folderFits = '../2D_annular_sector_extraction/sect_radAve_fits/'
+folderFits = '../1D_simFits/SasView_fits/'
 
 csv_filenameFits = folderFits + 'radAve_simFits.csv'
 fieldnamesFits = ['index', 'filename', 'sample', 'shear']
@@ -59,9 +59,9 @@ for names in pathNameFits:
 
 # plotting the data
 for i, sets in enumerate(data):
-    c = cm.viridis_r((i)/5., 1)  # set colour from colourmap
+    c = cm.viridis_r((i+1)/6., 1)  # set colour from colourmap
     plt.loglog(sets[:, 0], sets[:, 1]*3**i, 'o', color=c, label=sample[i])
-    plt.plot(dataFits[i][:, 0], dataFits[i][:, 1]*3**i, '-', color='white', alpha=0.5)
+    plt.plot(dataFits[i][:, 0], dataFits[i][:, 1]*3**i, '-', color='red', alpha=1)
 #    plt.plot(sets[:,0], sets[:,1], '--', color='black')
 
 # for i, sets in enumerate(dataFits):
@@ -140,7 +140,7 @@ plt.xticks(fontsize=fontsize)
 plt.yticks(fontsize=fontsize)
 
 fig = plt.figure(1)
-fig.savefig('test.png', dpi=300)
+fig.savefig('SANS1D.png', dpi=300)
 
 # function to show the plot
 plt.show()
