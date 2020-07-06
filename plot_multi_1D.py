@@ -62,6 +62,7 @@ for i, sets in enumerate(data):
     c = cm.viridis_r((i+1)/6., 1)  # set colour from colourmap
     plt.loglog(sets[:, 0], sets[:, 1]*3**i, 'o', color=c, label=sample[i])
     plt.plot(dataFits[i][:, 0], dataFits[i][:, 1]*3**i, '-', color='red', alpha=1)
+    plt.plot([0.04, 0.04], [1, 10000], 'black', lineStyle='--')
 #    plt.plot(sets[:,0], sets[:,1], '--', color='black')
 
 # for i, sets in enumerate(dataFits):
