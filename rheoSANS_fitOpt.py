@@ -127,10 +127,14 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     # saveOpt = []
     # saveOpt = input("would you like to save? enter '1' for yes: ")
+    description = 'loop_preF1'
+
     saveOpt = '1'
     if saveOpt == '1' or saveOpt == '':
         fitInfo = [ftol, method]
-        rsf.save(sans, '', minPars_complete, minPars, chi2_reduced, location, fitInfo)
+        # rsf.save(sans, '', minPars_complete, minPars, chi2_reduced, location, fitInfo)
+        rsf.save(sans, '', minPars_complete, minPars, chi2_reduced, location, fitInfo,
+                 description)
 
     out = [optim, chi2_reduced, sans]
 
@@ -259,16 +263,17 @@ bandVal = 0.18726784412384337
 # Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
 
-files_load = ['25wt_25ps_simInfo_loop_preF1.txt',
-              '25wt_50ps_simInfo_loop_preF1.txt',
-              '25wt_75ps_simInfo_loop_preF1.txt',
-              '25wt_100ps_simInfo_loop_preF1.txt']
+files_load = ['20wt_0ps_simInfo_F1.txt',
+              '20wt_50ps_simInfo_loop_preF1.txt',
+              '20wt_100ps_simInfo_loop_preF1.txt',
+              '20wt_200ps_simInfo_loop_preF1.txt',
+              '20wt_300ps_simInfo_loop_preF1.txt']
 
-indexSelected = ['74', '75', '76', '77']
+indexSelected = ['63', '64', '65', '66', '67']
 
-conc = '25'  # concentration of sample to be fitted
-preFit_shear = ['25', '50', '75', '100']
-shear = ['25', '50', '75', '100']  # shear rate of sample to be fitted
+conc = '20'  # concentration of sample to be fitted
+preFit_shear = ['0', '50', '100', '200', '300']
+shear = ['50', '100', '200', '300', '500']  # shear rate of sample to be fitted
 
 fitChoose = dict(scale=1,
                  background=1,
@@ -336,10 +341,10 @@ for i in range(len(indexSelected)):
             p_guess[ind] = pars[keys]
         else:
             continue
-    # pars2sim.update({'radius_pd': 0})
-    # pars2static.update({'radius_pd': 0})
-    pars2sim.update({'radius_pd': 0.163})
-    pars2static.update({'radius_pd': 0.163})
+    pars2sim.update({'radius_pd': 0})
+    pars2static.update({'radius_pd': 0})
+    # pars2sim.update({'radius_pd': 0.163})
+    # pars2static.update({'radius_pd': 0.163})
     del pars2sim['bandVal']
     out.append(rheoSANS_fitOpt(options, []))
 

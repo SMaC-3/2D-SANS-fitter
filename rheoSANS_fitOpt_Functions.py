@@ -840,7 +840,7 @@ def extract_annulus(sans, arg1, arg2, description):
 #############################################################################
 
 
-def save(sans, describer, minParams, minPars, stats, location, fitInfo):
+def save(sans, describer, minParams, minPars, stats, location, fitInfo, versionNum1):
     """Save modelled data and statistics
 
     Args:
@@ -878,7 +878,7 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
     saveName1 = name + post1 + describer + '_'
     # versionNum1 = input("Input a version number: ")
 
-    versionNum1 = 'loop_F1'
+    # versionNum1 = 'loop_F1'
 
     # Write modelled scattering data to 3 column dat file
     write_3_column(location + saveName1 + versionNum1 + type1, sans)
