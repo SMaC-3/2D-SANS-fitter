@@ -263,17 +263,16 @@ bandVal = 0.18726784412384337
 # Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
 
-files_load = ['20wt_0ps_simInfo_F1.txt',
-              '20wt_50ps_simInfo_loop_preF1.txt',
+files_load = ['20wt_50ps_simInfo_loop_preF1.txt',
               '20wt_100ps_simInfo_loop_preF1.txt',
               '20wt_200ps_simInfo_loop_preF1.txt',
               '20wt_300ps_simInfo_loop_preF1.txt']
 
-indexSelected = ['63', '64', '65', '66', '67']
+indexSelected = ['64', '65', '66', '67']
 
 conc = '20'  # concentration of sample to be fitted
-preFit_shear = ['0', '50', '100', '200', '300']
-shear = ['50', '100', '200', '300', '500']  # shear rate of sample to be fitted
+preFit_shear = ['50', '100', '200', '300']
+shear = ['100', '200', '300', '500']  # shear rate of sample to be fitted
 
 fitChoose = dict(scale=1,
                  background=1,
