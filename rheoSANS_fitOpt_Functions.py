@@ -114,6 +114,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         Returns:
             2D sasmodels object
         """
+        print('loop_F1')
         csv_filename = '../ExpDataFiles.csv'
         fieldnames = ['index', 'filename', 'sample', 'shear']
 
@@ -875,7 +876,9 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo):
     type1 = '.dat'
 
     saveName1 = name + post1 + describer + '_'
-    versionNum1 = input("Input a version number: ")
+    # versionNum1 = input("Input a version number: ")
+
+    versionNum1 = 'loop_F1'
 
     # Write modelled scattering data to 3 column dat file
     write_3_column(location + saveName1 + versionNum1 + type1, sans)

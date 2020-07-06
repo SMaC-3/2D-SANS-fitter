@@ -12,146 +12,6 @@ from scipy.optimize import least_squares
 import rheoSANS_fitOpt_Functions as rsf
 import os
 
-# %% codecell
-# =============================================================================
-# User input
-# =============================================================================
-
-# =============================================================================
-# Set default parameter dictionaries
-# Pars2sim contains parameters to be passed to the cylinder@hayter-msa model for
-# the purpose of fitting a high shear, flow aligned band.
-# This is the dictionary iterated over in the fitting routine.
-# Initial guesses for fitting parameters are taken from this dictionary.
-#
-# Pars2static contains parameters for a static band. It is recommended that these
-# parameters are taken from fitting radially averaged static data with the
-# cylinder@hayter-msa model.
-#
-# "bandVal" is external to these dictionaries are is used to determine the proportions
-# of each band.
-# =============================================================================
-
-# 0.163
-
-pars2sim = ({'scale':  0.82616,
-             'background': 0.48719,
-             'sld': -0.4,
-             'sld_solvent': 6.3,
-             'radius': 19.82,
-             'radius_pd': 0.163,
-             'radius_pd_n': 35.0,
-             'length': 115,
-             'length_pd': 0.0,
-             'length_pd_n': 35.0,
-             'theta': 90.0,
-             'theta_pd': 0.0,
-             'theta_pd_n': 35.0,
-             'theta_pd_type': 'gaussian',
-             'phi': 0.0,
-             'phi_pd': 27.0,
-             'phi_pd_n': 35.0,
-             'phi_pd_type': 'gaussian',
-             'radius_effective_mode': 0.0,
-             'radius_effective': 33.775,
-             'volfraction': 0.268,
-             'charge': 30.827,
-             'temperature': 298.0,
-             'concentration_salt': 0.38,
-             'dielectconst': 80.2,
-             'radius_pd_type': 'gaussian'})
-
-pars2sim.update({'scale': 0.7961741405758487,
-                 'background': 0.32943979774536214,
-                 'length': 102.1043511190572,
-                 'phi_pd': 30.9162563930588, })
-
-pars2static = ({'scale': 0.7961741405758487,
-                'background': 0.32943979774536214,
-                'sld': -0.4,
-                'sld_solvent': 6.3,
-                'radius': 19.82,
-                'radius_pd': 0.163,
-                'radius_pd_n': 35.0,
-                'length': 91.472,
-                'length_pd': 0.0,
-                'length_pd_n': 35.0,
-                'theta': 90.0,
-                'theta_pd': 90.0,
-                'theta_pd_n': 35.0,
-                'theta_pd_type': 'uniform',
-                'phi': 0.0,
-                'phi_pd': 90.0,
-                'phi_pd_n': 35.0,
-                'phi_pd_type': 'uniform',
-                'radius_effective_mode': 0.0,
-                'radius_effective': 33.775,
-                'volfraction': 0.268,
-                'charge': 30.827,
-                'temperature': 298.0,
-                'concentration_salt': 0.38,
-                'dielectconst': 80.2,
-                'radius_pd_type': 'gaussian'})
-
-# No radial pd
-pars2sim.update({'radius_pd': 0})
-pars2static.update({'radius_pd': 0})
-
-# Fewer radial pd points
-# pars2sim.update({'radius_pd_n': 5.0})
-# pars2static.update({'radius_pd_n': 5.0})
-
-# Fewer phi pd points
-# pars2sim.update({'phi_pd_n': 20.0})
-#
-# # Fewer phi & theta pd points in static
-# pars2static.update({'phi_pd_n': 20.0})
-# pars2static.update({'theta_pd_n': 20.0})
-
-bandVal = 0.18726784412384337
-
-# =============================================================================
-# Identify experimental data to be used in fitting by referencing index in
-# csv file and setting expected concentration and shear rate for error check.
-# location will be user specific and will need to modified between users.
-# A simple modifcation would be to change this to the current file path.
-# =============================================================================
-
-indexSelected = ['72']
-
-conc = '25'  # concentration of sample to be fitted
-shear = '5'  # shear rate of sample to be fitted
-
-rsf.input_sample_check(conc, shear, int(indexSelected[0]))
-location = rsf.build_save_location(conc, shear)
-
-# =============================================================================
-# Select fitting parameters. Initial values taken from pars2sim dictionary.
-# =============================================================================
-
-fitChoose = dict(scale=1,
-                 background=1,
-                 length=1,
-                 phi_pd=1,
-                 bandVal=1,)
-
-p_list = rsf.fitInput(fitChoose)
-p_guess = []
-for pars in p_list:
-    if pars == 'bandVal':
-        p_guess.append(bandVal)
-    else:
-        p_guess.append(pars2sim[pars])
-
-# =============================================================================
-# End user input
-# =============================================================================
-# =============================================================================
-# Defining input
-# =============================================================================
-
-options = [indexSelected[0], pars2sim, pars2static, p_list, p_guess,
-           location, bandVal]
 
 # =============================================================================
 # Defining least squares fitting function
@@ -169,6 +29,8 @@ def rheoSANS_fitOpt(options, saveOpt):
     pars2static = options[2]
     p_list = options[3]
     p_guess = options[4]
+    print(p_list)
+    print(p_guess)
     location = options[5]
     bandVal = options[6]
 
@@ -261,11 +123,11 @@ def rheoSANS_fitOpt(options, saveOpt):
     # Save data
     # =============================================================================
 
-    os.system('afplay /System/Library/Sounds/Glass.aiff')
+    # os.system('afplay /System/Library/Sounds/Glass.aiff')
 
-    saveOpt = []
-    saveOpt = input("would you like to save? enter '1' for yes: ")
-
+    # saveOpt = []
+    # saveOpt = input("would you like to save? enter '1' for yes: ")
+    saveOpt = '1'
     if saveOpt == '1' or saveOpt == '':
         fitInfo = [ftol, method]
         rsf.save(sans, '', minPars_complete, minPars, chi2_reduced, location, fitInfo)
@@ -274,12 +136,212 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     return out
 
+
 # =============================================================================
 # Run least squares fitting function
 # =============================================================================
 
+# %% codecell
+# =============================================================================
+# User input
+# =============================================================================
 
-out = rheoSANS_fitOpt(options, [])
+# =============================================================================
+# Set default parameter dictionaries
+# Pars2sim contains parameters to be passed to the cylinder@hayter-msa model for
+# the purpose of fitting a high shear, flow aligned band.
+# This is the dictionary iterated over in the fitting routine.
+# Initial guesses for fitting parameters are taken from this dictionary.
+#
+# Pars2static contains parameters for a static band. It is recommended that these
+# parameters are taken from fitting radially averaged static data with the
+# cylinder@hayter-msa model.
+#
+# "bandVal" is external to these dictionaries are is used to determine the proportions
+# of each band.
+# =============================================================================
+
+# 0.163
+
+pars2sim = ({'scale':  0.82616,
+             'background': 0.48719,
+             'sld': -0.4,
+             'sld_solvent': 6.3,
+             'radius': 19.82,
+             'radius_pd': 0.163,
+             'radius_pd_n': 35.0,
+             'length': 115,
+             'length_pd': 0.0,
+             'length_pd_n': 35.0,
+             'theta': 90.0,
+             'theta_pd': 0.0,
+             'theta_pd_n': 35.0,
+             'theta_pd_type': 'gaussian',
+             'phi': 0.0,
+             'phi_pd': 27.0,
+             'phi_pd_n': 35.0,
+             'phi_pd_type': 'gaussian',
+             'radius_effective_mode': 0.0,
+             'radius_effective': 33.775,
+             'volfraction': 0.268,
+             'charge': 30.827,
+             'temperature': 298.0,
+             'concentration_salt': 0.38,
+             'dielectconst': 80.2,
+             'radius_pd_type': 'gaussian'})
+
+pars2static = ({'scale': 0.7961741405758487,
+                'background': 0.32943979774536214,
+                'sld': -0.4,
+                'sld_solvent': 6.3,
+                'radius': 19.82,
+                'radius_pd': 0.163,
+                'radius_pd_n': 35.0,
+                'length': 91.472,
+                'length_pd': 0.0,
+                'length_pd_n': 35.0,
+                'theta': 90.0,
+                'theta_pd': 90.0,
+                'theta_pd_n': 35.0,
+                'theta_pd_type': 'uniform',
+                'phi': 0.0,
+                'phi_pd': 90.0,
+                'phi_pd_n': 35.0,
+                'phi_pd_type': 'uniform',
+                'radius_effective_mode': 0.0,
+                'radius_effective': 33.775,
+                'volfraction': 0.268,
+                'charge': 30.827,
+                'temperature': 298.0,
+                'concentration_salt': 0.38,
+                'dielectconst': 80.2,
+                'radius_pd_type': 'gaussian'})
+
+bandVal = 0.18726784412384337
+
+
+# No radial pd
+# pars2sim.update({'radius_pd': 0})
+# pars2static.update({'radius_pd': 0})
+
+# Fewer radial pd points
+# pars2sim.update({'radius_pd_n': 5.0})
+# pars2static.update({'radius_pd_n': 5.0})
+
+# Fewer phi pd points
+# pars2sim.update({'phi_pd_n': 20.0})
+#
+# # Fewer phi & theta pd points in static
+# pars2static.update({'phi_pd_n': 20.0})
+# pars2static.update({'theta_pd_n': 20.0})
+
+
+# =============================================================================
+# Identify experimental data to be used in fitting by referencing index in
+# csv file and setting expected concentration and shear rate for error check.
+# location will be user specific and will need to modified between users.
+# A simple modifcation would be to change this to the current file path.
+# =============================================================================
+
+# indexSelected = ['78', '79']
+#
+# conc = '25'  # concentration of sample to be fitted
+# preFit_shear = ['100', '150']
+# shear = ['150', '200']  # shear rate of sample to be fitted
+#
+# # indexSelected = ['72']
+# #
+# # conc = '25'  # concentration of sample to be fitted
+# # shear = '5'  # shear rate of sample to be fitted
+
+
+# =============================================================================
+# Select fitting parameters. Initial values taken from pars2sim dictionary.
+# =============================================================================
+
+files_load = ['25wt_25ps_simInfo_loop_preF1.txt',
+              '25wt_50ps_simInfo_loop_preF1.txt',
+              '25wt_75ps_simInfo_loop_preF1.txt',
+              '25wt_100ps_simInfo_loop_preF1.txt']
+
+indexSelected = ['74', '75', '76', '77']
+
+conc = '25'  # concentration of sample to be fitted
+preFit_shear = ['25', '50', '75', '100']
+shear = ['25', '50', '75', '100']  # shear rate of sample to be fitted
+
+fitChoose = dict(scale=1,
+                 background=1,
+                 length=1,
+                 phi_pd=1,
+                 bandVal=1,)
+
+# fitChoose = dict(scale=0,
+#                  background=0,
+#                  length=1,
+#                  phi_pd=0,
+#                  bandVal=1,)
+
+
+projPath = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_{shear}ps/'.format(
+    conc=conc, shear=preFit_shear[0])
+projPath_full = projPath + files_load[0]
+pars, pars_static = rsf.loadDict(projPath_full, [])
+pars2sim.update(pars)
+pars2static.update(pars_static)
+pars2sim.update({'radius_pd': 0})
+pars2static.update({'radius_pd': 0})
+del pars2sim['bandVal']
+
+p_list = rsf.fitInput(fitChoose)
+p_guess = []
+for pars in p_list:
+    if pars == 'bandVal':
+        p_guess.append(bandVal)
+    else:
+        p_guess.append(pars2sim[pars])
+
+# =============================================================================
+# End user input
+# =============================================================================
+# =============================================================================
+# Defining input
+# =============================================================================
+
+options = [indexSelected[0], pars2sim, pars2static, p_list, p_guess,
+           '', bandVal]
+
+out = []
+
+for i in range(len(indexSelected)):
+    options[0] = indexSelected[i]
+    shear_select = shear[i]
+    shear_preFit = preFit_shear[i]
+    rsf.input_sample_check(conc, shear_select, int(indexSelected[i]))
+    location = rsf.build_save_location(conc, shear_select)
+    # print(location)
+    options[-2] = location
+    projPath = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_{shear}ps/'.format(
+        conc=conc, shear=shear_preFit)
+    projPath_full = projPath + files_load[i]
+    pars, pars_static = rsf.loadDict(projPath_full, [])
+    # print(pars['bandVal'])
+    # print(pars)
+    options[-1] = pars['bandVal']
+    pars2sim.update(pars)
+    pars2static.update(pars_static)
+    for keys, val in fitChoose.items():
+        if val == 1:
+            ind = p_list.index(keys)
+            p_guess[ind] = pars[keys]
+        else:
+            continue
+    # pars2sim.update({'radius_pd': 0})
+    # pars2static.update({'radius_pd': 0})
+    pars2sim.update({'radius_pd': 0.163})
+    pars2static.update({'radius_pd': 0.163})
+    del pars2sim['bandVal']
+    out.append(rheoSANS_fitOpt(options, []))
 
 # projPath = '../2D_simFits/ReducedChi2_fits/25wt_CAPB_SLES_2wt_NaCl/25wt_100ps/25wt_100ps_simInfo_preF2.txt'
 # pars, pars_static = rsf.loadDict(projPath,[])
