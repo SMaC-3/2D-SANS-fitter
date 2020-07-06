@@ -53,7 +53,7 @@ pars2sim = ({'scale':  0.67265,
              'phi_pd_n': 35.0,
              'phi_pd_type': 'gaussian',
              'radius_effective_mode': 0.0,
-             'radius_effective': 38.371,
+             'radius_effective': 36.717,
              'volfraction': 0.1626,
              'charge': 30.827,
              'temperature': 298.0,
@@ -61,14 +61,14 @@ pars2sim = ({'scale':  0.67265,
              'dielectconst': 80.2,
              'radius_pd_type': 'gaussian'})
 
-pars2static = ({'scale':  0.67265,
-                'background': 0.51438,
+pars2static = ({'scale':  0.6692957360961517,
+                'background': 0.3472873366434478,
                 'sld': -0.4,
                 'sld_solvent': 6.3,
                 'radius': 19.82,
                 'radius_pd': 0.163,
                 'radius_pd_n': 35.0,
-                'length': 120.45,
+                'length': 110.1851386,
                 'length_pd': 0.0,
                 'length_pd_n': 35.0,
                 'theta': 90.0,
@@ -80,7 +80,7 @@ pars2static = ({'scale':  0.67265,
                 'phi_pd_n': 35.0,
                 'phi_pd_type': 'uniform',
                 'radius_effective_mode': 0.0,
-                'radius_effective': 38.371,
+                'radius_effective': 36.717,
                 'volfraction': 0.1626,
                 'charge': 30.827,
                 'temperature': 298.0,
@@ -89,8 +89,8 @@ pars2static = ({'scale':  0.67265,
                 'radius_pd_type': 'gaussian'})
 
 # No radial pd
-pars2sim.update({'radius_pd': 0})
-pars2static.update({'radius_pd': 0})
+# pars2sim.update({'radius_pd': 0})
+# pars2static.update({'radius_pd': 0})
 
 # Fewer radial pd points
 # pars2sim.update({'radius_pd_n': 5.0})
@@ -103,7 +103,7 @@ pars2static.update({'radius_pd': 0})
 # pars2static.update({'phi_pd_n': 20.0})
 # pars2static.update({'theta_pd_n': 20.0})
 
-bandVal = 0.49
+bandVal = 0
 
 # =============================================================================
 # Identify experimental data to be used in fitting by referencing index in
@@ -112,10 +112,10 @@ bandVal = 0.49
 # A simple modifcation would be to change this to the current file path.
 # =============================================================================
 
-indexSelected = ['45']
+indexSelected = ['62']
 
 conc = '15'  # concentration of sample to be fitted
-shear = '10'  # shear rate of sample to be fitted
+shear = '0'  # shear rate of sample to be fitted
 
 rsf.input_sample_check(conc, shear, int(indexSelected[0]))
 location = rsf.build_save_location(conc, shear)
@@ -124,11 +124,11 @@ location = rsf.build_save_location(conc, shear)
 # Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
 
-fitChoose = dict(scale=1,
-                 background=1,
-                 length=1,
-                 phi_pd=1,
-                 bandVal=1,)
+fitChoose = dict(scale=0,
+                 background=0,
+                 length=0,
+                 phi_pd=0,
+                 bandVal=0,)
 
 p_list = rsf.fitInput(fitChoose)
 p_guess = []
@@ -258,12 +258,14 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     os.system('afplay /System/Library/Sounds/Glass.aiff')
 
+    description = 'F1'
     saveOpt = []
     saveOpt = input("would you like to save? enter '1' for yes: ")
 
     if saveOpt == '1' or saveOpt == '':
         fitInfo = [ftol, method]
-        rsf.save(sans, '', minPars_complete, minPars, chi2_reduced, location, fitInfo)
+        rsf.save(sans, '', minPars_complete, minPars, chi2_reduced, location, fitInfo,
+                 description)
 
     out = [optim, chi2_reduced, sans]
 
