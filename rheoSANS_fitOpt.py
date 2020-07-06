@@ -34,14 +34,14 @@ import os
 
 # 0.163
 
-pars2sim = ({'scale':  0.8395,
-             'background': 0.4281,
+pars2sim = ({'scale':  0.67265,
+             'background': 0.51438,
              'sld': -0.4,
              'sld_solvent': 6.3,
              'radius': 19.82,
-             'radius_pd': 0,
+             'radius_pd': 0.163,
              'radius_pd_n': 35.0,
-             'length': 103.18,
+             'length': 120.45,
              'length_pd': 0.0,
              'length_pd_n': 35.0,
              'theta': 90.0,
@@ -49,26 +49,26 @@ pars2sim = ({'scale':  0.8395,
              'theta_pd_n': 35.0,
              'theta_pd_type': 'gaussian',
              'phi': 0.0,
-             'phi_pd': 20.0,
+             'phi_pd': 58.0,
              'phi_pd_n': 35.0,
              'phi_pd_type': 'gaussian',
              'radius_effective_mode': 0.0,
-             'radius_effective': 35.677,
-             'volfraction': 0.216,
+             'radius_effective': 38.371,
+             'volfraction': 0.1626,
              'charge': 30.827,
              'temperature': 298.0,
              'concentration_salt': 0.38,
              'dielectconst': 80.2,
              'radius_pd_type': 'gaussian'})
 
-pars2static = ({'scale':  0.8395,
-                'background': 0.4281,
+pars2static = ({'scale':  0.67265,
+                'background': 0.51438,
                 'sld': -0.4,
                 'sld_solvent': 6.3,
                 'radius': 19.82,
-                'radius_pd': 0,
+                'radius_pd': 0.163,
                 'radius_pd_n': 35.0,
-                'length': 103.18,
+                'length': 120.45,
                 'length_pd': 0.0,
                 'length_pd_n': 35.0,
                 'theta': 90.0,
@@ -80,8 +80,8 @@ pars2static = ({'scale':  0.8395,
                 'phi_pd_n': 35.0,
                 'phi_pd_type': 'uniform',
                 'radius_effective_mode': 0.0,
-                'radius_effective': 35.677,
-                'volfraction': 0.216,
+                'radius_effective': 38.371,
+                'volfraction': 0.1626,
                 'charge': 30.827,
                 'temperature': 298.0,
                 'concentration_salt': 0.38,
@@ -89,8 +89,8 @@ pars2static = ({'scale':  0.8395,
                 'radius_pd_type': 'gaussian'})
 
 # No radial pd
-# pars2sim.update({'radius_pd': 0})
-# pars2static.update({'radius_pd': 0})
+pars2sim.update({'radius_pd': 0})
+pars2static.update({'radius_pd': 0})
 
 # Fewer radial pd points
 # pars2sim.update({'radius_pd_n': 5.0})
@@ -103,7 +103,7 @@ pars2static = ({'scale':  0.8395,
 # pars2static.update({'phi_pd_n': 20.0})
 # pars2static.update({'theta_pd_n': 20.0})
 
-bandVal = 0.28
+bandVal = 0.49
 
 # =============================================================================
 # Identify experimental data to be used in fitting by referencing index in
@@ -112,10 +112,10 @@ bandVal = 0.28
 # A simple modifcation would be to change this to the current file path.
 # =============================================================================
 
-indexSelected = ['63']
+indexSelected = ['45']
 
-conc = '20'  # concentration of sample to be fitted
-shear = '50'  # shear rate of sample to be fitted
+conc = '15'  # concentration of sample to be fitted
+shear = '10'  # shear rate of sample to be fitted
 
 rsf.input_sample_check(conc, shear, int(indexSelected[0]))
 location = rsf.build_save_location(conc, shear)

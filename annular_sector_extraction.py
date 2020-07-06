@@ -115,19 +115,19 @@ def sector(dataSet, centre, width, save='0', describer=None):
 
 #    allerror = [err, seccrop_err, errtotal, errave]
 
-    # if save == '1':
-    #     fileType = '.dat'
-    #     if dataSet.shear[0][0] == '0':
-    #         fileName = describer + '_' + str(dataSet.sample[0]) + '_' + 'static'
-    #     else:
-    #         fileName = describer + '_' + \
-    #             str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
-    #     location = '../2D_annular_sector_extraction/py_sect_radAve/'
-    #     fullName = location + fileName + fileType
-    #     with open(fullName, 'wt') as fh:
-    #         fh.write("q  I(q)  err_I\n")
-    #         for x, y, z in zip(bins, binave, errave):
-    #             fh.write("%g  %g  %g\n" % (x, y, z))
+    if save == '1':
+        fileType = '.dat'
+        if dataSet.shear[0][0] == '0':
+            fileName = describer + '_' + str(dataSet.sample[0]) + '_' + 'static'
+        else:
+            fileName = describer + '_' + \
+                str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
+        location = '../2D_annular_sector_extraction/py_sect_radAve/'
+        fullName = location + fileName + fileType
+        with open(fullName, 'wt') as fh:
+            fh.write("q  I(q)  err_I\n")
+            for x, y, z in zip(bins, binave, errave):
+                fh.write("%g  %g  %g\n" % (x, y, z))
 
     return bins, binave, errave
 
