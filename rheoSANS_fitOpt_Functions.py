@@ -137,9 +137,16 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         qy_lower = -0.014
         qy_upper = -0.011
 
+        q_min = -0.062
+        q_max = -0.0539
+
         qx_neg = np.logical_and(self.expData_bs[:, 0] <
                                 qx_neg_upper, self.expData_bs[:, 0] > qx_neg_lower)
         data_qx_neg = self.expData_bs[~qx_neg]
+
+        qx_neg = np.logical_and(data_qx_neg[:, 0] <
+                                q_max, data_qx_neg[:, 0] > q_min)
+        data_qx_neg = data_qx_neg[~qx_neg]
 
         qx_pos = np.logical_and(data_qx_neg[:, 0] < qx_pos_upper, data_qx_neg[:, 0] > qx_pos_lower)
         data_qx_pos = data_qx_neg[~qx_pos]
@@ -808,7 +815,10 @@ def extract_sector(sans, arg1, arg2, description):
     q_sim, I_sim, err_sim = ansect.sector(sans.simData, arg1, arg2)
 
     chi_2 = str(round(np.nansum((((I_exp-I_sim)/err_exp)**2)/len(q_exp)), sans.dp))
-    stat = 'reduced chi2 of ' + description + ' sector: ' + chi_2
+    RMSE = str(round((sum((I_exp - I_sim)**2)/len(I_exp))**0.5, sans.dp))
+
+    stat = 'reduced chi2, RMSE of ' + description + ': ' + chi_2 + ', ' + RMSE
+    # stat = 'reduced chi2 of ' + description + ' sector: ' + chi_2
 
     return stat
 
@@ -832,7 +842,9 @@ def extract_annulus(sans, arg1, arg2, description):
     q_sim, I_sim, err_sim = ansect.annular(sans.simData, radius=arg1, thx=arg2)
 
     chi_2 = str(round(np.nansum((((I_exp-I_sim)/err_exp)**2)/len(q_exp)), sans.dp))
-    stat = 'reduced chi2 of ' + description + ': ' + chi_2
+    RMSE = str(round((sum((I_exp - I_sim)**2)/len(I_exp))**0.5, sans.dp))
+
+    stat = 'reduced chi2, RMSE of ' + description + ': ' + chi_2 + ', ' + RMSE
 
     return stat
 
