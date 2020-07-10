@@ -34,27 +34,27 @@ import os
 
 # 0.163
 
-pars2sim = ({'scale':  0.83615,
-             'background': 0.43477,
+pars2sim = ({'scale':  0.80501,
+             'background': 0.36539,
              'sld': -0.4,
              'sld_solvent': 6.3,
              'radius': 19.82,
              'radius_pd': 0.163,
              'radius_pd_n': 10.0,
-             'length': 103.44,
+             'length': 183.96,
              'length_pd': 0.0,
              'length_pd_n': 35.0,
              'theta': 90.0,
              'theta_pd': 90.0,
              'theta_pd_n': 26.0,
              'theta_pd_type': 'uniform',
-             'phi': 90.0,
+             'phi': 0.0,
              'phi_pd': 90.0,
              'phi_pd_n': 26.0,
              'phi_pd_type': 'uniform',
              'radius_effective_mode': 1,
              # 'radius_effective': 0,
-             'volfraction': 0.216,
+             'volfraction': 0.0547,
              'charge': 30.827,
              'temperature': 298.0,
              'concentration_salt': 0.38,
@@ -67,17 +67,17 @@ pars2static = ({'scale':  0.67087,
                 'sld_solvent': 6.3,
                 'radius': 19.82,
                 'radius_pd': 0.163,
-                'radius_pd_n': 10.0,
+                'radius_pd_n': 0.0,
                 'length': 119.76483,
                 'length_pd': 0.0,
                 'length_pd_n': 35.0,
                 'theta': 90.0,
                 'theta_pd': 90.0,
-                'theta_pd_n': 50.0,
+                'theta_pd_n': 0.0,
                 'theta_pd_type': 'uniform',
                 'phi': 0.0,
                 'phi_pd': 90.0,
-                'phi_pd_n': 50.0,
+                'phi_pd_n': 0.0,
                 'phi_pd_type': 'uniform',
                 'radius_effective_mode': 0,
                 'radius_effective': 38.194,
@@ -112,9 +112,9 @@ bandVal = 1
 # A simple modifcation would be to change this to the current file path.
 # =============================================================================
 
-indexSelected = ['71']
+indexSelected = ['34']
 
-conc = '20'  # concentration of sample to be fitted
+conc = '5'  # concentration of sample to be fitted
 shear = '0'  # shear rate of sample to be fitted
 
 rsf.input_sample_check(conc, shear, int(indexSelected[0]))
@@ -228,6 +228,10 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     sans.optimSim = optimSim
     sans.makeSimObj(optimSim)
+
+    RMSE = (sum((sans.expData.data - sans.optimSim)**2)
+            / len(sans.expData.data))**0.5
+    chi2_reduced.append('RMSE: ' + str(round(RMSE, sans.dp)))
 
     # =============================================================================
     # Calculate statistics of 1D extractions
