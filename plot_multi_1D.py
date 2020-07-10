@@ -14,7 +14,7 @@ import numpy as np
 import rheoSANS_fitOpt_Functions as rsf
 
 # Choose data to plot
-plot = "1, 3-7"
+plot = "2, 4-8"
 
 # set path and return pathnames for data
 folder = '../2D_annular_sector_extraction/py_sect_radAve/'
@@ -38,7 +38,7 @@ for names in pathName:
 
 # set path and return pathnames for sim fits
 
-folderFits = '../1D_simFits/SasView_fits/'
+folderFits = '../1D_simFits/ReducedChi2_fits/'
 
 csv_filenameFits = folderFits + 'radAve_simFits.csv'
 fieldnamesFits = ['index', 'filename', 'sample', 'shear']
