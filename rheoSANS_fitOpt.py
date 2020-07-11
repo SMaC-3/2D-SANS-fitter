@@ -34,59 +34,61 @@ import os
 
 # 0.163
 
-pars2sim = ({'scale':  0.80501,
-             'background': 0.36539,
+pars2sim = ({'scale':  0.8948,
+             'background': 0.333,
              'sld': -0.4,
              'sld_solvent': 6.3,
              'radius': 19.82,
              'radius_pd': 0.163,
              'radius_pd_n': 10.0,
-             'length': 183.96,
+             'length': 150,
              'length_pd': 0.0,
              'length_pd_n': 35.0,
              'theta': 90.0,
-             'theta_pd': 90.0,
+             'theta_pd': 0.0,
              'theta_pd_n': 26.0,
-             'theta_pd_type': 'uniform',
+             'theta_pd_type': 'gaussian',
              'phi': 0.0,
-             'phi_pd': 90.0,
+             'phi_pd': 15.6,
              'phi_pd_n': 26.0,
-             'phi_pd_type': 'uniform',
-             'radius_effective_mode': 1,
-             # 'radius_effective': 0,
-             'volfraction': 0.0547,
+             'phi_pd_type': 'gaussian',
+             'radius_effective_mode': 0,
+             'radius_effective': 35.1963,
+             'volfraction': 0.2071,
              'charge': 30.827,
              'temperature': 298.0,
              'concentration_salt': 0.38,
              'dielectconst': 80.2,
              'radius_pd_type': 'gaussian'})
 
-pars2static = ({'scale':  0.67087,
-                'background': 0.35403,
+pars2static = ({'scale':  0.8764,
+                'background': 0.3594,
                 'sld': -0.4,
                 'sld_solvent': 6.3,
                 'radius': 19.82,
                 'radius_pd': 0.163,
-                'radius_pd_n': 0.0,
-                'length': 119.76483,
+                'radius_pd_n': 10.0,
+                'length': 100.1803,
                 'length_pd': 0.0,
                 'length_pd_n': 35.0,
                 'theta': 90.0,
                 'theta_pd': 90.0,
-                'theta_pd_n': 0.0,
+                'theta_pd_n': 26.0,
                 'theta_pd_type': 'uniform',
                 'phi': 0.0,
                 'phi_pd': 90.0,
-                'phi_pd_n': 0.0,
+                'phi_pd_n': 26.0,
                 'phi_pd_type': 'uniform',
-                'radius_effective_mode': 0,
-                'radius_effective': 38.194,
-                'volfraction': 0.1626,
+                'radius_effective_mode': 1,
+                # 'radius_effective': 0,
+                'volfraction': 0.2071,
                 'charge': 30.827,
                 'temperature': 298.0,
                 'concentration_salt': 0.38,
                 'dielectconst': 80.2,
                 'radius_pd_type': 'gaussian'})
+
+# pars2static = pars2sim
 
 # No radial pd
 # pars2sim.update({'radius_pd': 0})
@@ -103,7 +105,7 @@ pars2static = ({'scale':  0.67087,
 # pars2static.update({'phi_pd_n': 20.0})
 # pars2static.update({'theta_pd_n': 20.0})
 
-bandVal = 1
+bandVal = 0.745
 
 # =============================================================================
 # Identify experimental data to be used in fitting by referencing index in
@@ -112,10 +114,10 @@ bandVal = 1
 # A simple modifcation would be to change this to the current file path.
 # =============================================================================
 
-indexSelected = ['34']
+indexSelected = ['67']
 
-conc = '5'  # concentration of sample to be fitted
-shear = '0'  # shear rate of sample to be fitted
+conc = '20'  # concentration of sample to be fitted
+shear = '500'  # shear rate of sample to be fitted
 
 rsf.input_sample_check(conc, shear, int(indexSelected[0]))
 location = rsf.build_save_location(conc, shear)
@@ -124,11 +126,11 @@ location = rsf.build_save_location(conc, shear)
 # Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
 
-fitChoose = dict(scale=0,
-                 background=0,
-                 length=0,
-                 phi_pd=0,
-                 bandVal=0,)
+fitChoose = dict(scale=1,
+                 background=1,
+                 length=1,
+                 phi_pd=1,
+                 bandVal=1,)
 
 p_list = rsf.fitInput(fitChoose)
 p_guess = []
