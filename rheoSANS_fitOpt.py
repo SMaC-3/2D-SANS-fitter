@@ -127,7 +127,7 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     # saveOpt = []
     # saveOpt = input("would you like to save? enter '1' for yes: ")
-    description = 'loop_preF2_50PDn'
+    description = 'loop_upd3'
 
     saveOpt = '1'
     if saveOpt == '1' or saveOpt == '':
@@ -167,54 +167,54 @@ def rheoSANS_fitOpt(options, saveOpt):
 
 # 0.163
 
-pars2sim = ({'scale':  0.82616,
-             'background': 0.48719,
+pars2sim = ({'scale':  0.8423,
+             'background': 0.4428,
              'sld': -0.4,
              'sld_solvent': 6.3,
              'radius': 19.82,
              'radius_pd': 0.163,
-             'radius_pd_n': 35.0,
-             'length': 115,
+             'radius_pd_n': 10.0,
+             'length': 91.47,
              'length_pd': 0.0,
              'length_pd_n': 35.0,
              'theta': 90.0,
              'theta_pd': 0.0,
-             'theta_pd_n': 35.0,
+             'theta_pd_n': 26.0,
              'theta_pd_type': 'gaussian',
              'phi': 0.0,
              'phi_pd': 27.0,
-             'phi_pd_n': 35.0,
+             'phi_pd_n': 26.0,
              'phi_pd_type': 'gaussian',
-             'radius_effective_mode': 0.0,
-             'radius_effective': 33.775,
-             'volfraction': 0.268,
+             'radius_effective_mode': 1,
+             'radius_effective': 33.7753,
+             'volfraction': 0.2583,
              'charge': 30.827,
              'temperature': 298.0,
              'concentration_salt': 0.38,
              'dielectconst': 80.2,
              'radius_pd_type': 'gaussian'})
 
-pars2static = ({'scale': 0.7961741405758487,
-                'background': 0.32943979774536214,
+pars2static = ({'scale':  0.8423,
+                'background': 0.4428,
                 'sld': -0.4,
                 'sld_solvent': 6.3,
                 'radius': 19.82,
                 'radius_pd': 0.163,
-                'radius_pd_n': 35.0,
-                'length': 91.472,
+                'radius_pd_n': 10.0,
+                'length': 91.47,
                 'length_pd': 0.0,
                 'length_pd_n': 35.0,
                 'theta': 90.0,
                 'theta_pd': 90.0,
-                'theta_pd_n': 35.0,
+                'theta_pd_n': 26.0,
                 'theta_pd_type': 'uniform',
                 'phi': 0.0,
                 'phi_pd': 90.0,
                 'phi_pd_n': 35.0,
                 'phi_pd_type': 'uniform',
-                'radius_effective_mode': 0.0,
-                'radius_effective': 33.775,
-                'volfraction': 0.268,
+                'radius_effective_mode': 1,
+                'radius_effective': 33.7753,
+                'volfraction': 0.2583,
                 'charge': 30.827,
                 'temperature': 298.0,
                 'concentration_salt': 0.38,
@@ -263,17 +263,17 @@ bandVal = 0.18726784412384337
 # Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
 # loop_preF2_50PDn
-files_load = ['15wt_10ps_simInfo_F2_50PDn.txt',
-              '15wt_25ps_simInfo_loop_preF2_50PDn.txt',
-              '15wt_50ps_simInfo_loop_preF2_50PDn.txt',
-              '15wt_75ps_simInfo_loop_preF2_50PDn.txt',
-              '15wt_100ps_simInfo_loop_preF2_50PDn.txt']
+files_load = ['20wt_50ps_simInfo_upd3.txt',
+              '20wt_100ps_simInfo_upd3.txt',
+              '20wt_200ps_simInfo_upd3.txt',
+              '20wt_300ps_simInfo_upd3.txt',
+              '20wt_500ps_simInfo_upd3.txt']
 
-indexSelected = ['46', '47', '48', '49', '50']
+indexSelected = ['63', '64', '65', '66', '67']
 
-conc = '15'  # concentration of sample to be fitted
-preFit_shear = ['10', '25', '50', '75', '100']
-shear = ['25', '50', '75', '100', '200']  # shear rate of sample to be fitted
+conc = '20'  # concentration of sample to be fitted
+preFit_shear = ['50', '100', '200', '300', '500']
+shear = ['50', '100', '200', '300', '500']  # shear rate of sample to be fitted
 
 fitChoose = dict(scale=1,
                  background=1,
@@ -341,8 +341,8 @@ for i in range(len(indexSelected)):
             p_guess[ind] = pars[keys]
         else:
             continue
-    pars2sim.update({'radius_pd': 0})
-    pars2static.update({'radius_pd': 0})
+    # pars2sim.update({'radius_pd': 0})
+    # pars2static.update({'radius_pd': 0})
     # pars2sim.update({'radius_pd': 0.163})
     # pars2static.update({'radius_pd': 0.163})
     del pars2sim['bandVal']
