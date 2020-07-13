@@ -127,7 +127,7 @@ def rheoSANS_fitOpt(options, saveOpt):
 
     # saveOpt = []
     # saveOpt = input("would you like to save? enter '1' for yes: ")
-    description = 'loop_upd3'
+    description = 'loop_modMask_revOrder_upd3'
 
     saveOpt = '1'
     if saveOpt == '1' or saveOpt == '':
@@ -263,29 +263,32 @@ bandVal = 0.18726784412384337
 # Select fitting parameters. Initial values taken from pars2sim dictionary.
 # =============================================================================
 # loop_preF2_50PDn
-files_load = ['20wt_50ps_simInfo_upd3.txt',
-              '20wt_100ps_simInfo_upd3.txt',
-              '20wt_200ps_simInfo_upd3.txt',
-              '20wt_300ps_simInfo_upd3.txt',
-              '20wt_500ps_simInfo_upd3.txt']
 
-indexSelected = ['63', '64', '65', '66', '67']
+files_load = ['3p5wt_1500ps_simInfo_loop_modMask_upd3.txt',
+              '3p5wt_1200ps_simInfo_loop_modMask_revOrder_upd3.txt',
+              '3p5wt_1000ps_simInfo_loop_modMask_revOrder_upd3.txt',
+              '3p5wt_800ps_simInfo_loop_modMask_revOrder_upd3.txt',
+              '3p5wt_500ps_simInfo_loop_modMask_revOrder_upd3.txt',
+              '3p5wt_300ps_simInfo_loop_modMask_revOrder_upd3.txt',
+              '3p5wt_200ps_simInfo_loop_modMask_revOrder_upd3.txt']
 
-conc = '20'  # concentration of sample to be fitted
-preFit_shear = ['50', '100', '200', '300', '500']
-shear = ['50', '100', '200', '300', '500']  # shear rate of sample to be fitted
+indexSelected = ['13', '12', '11', '10', '9', '8', '7']
+
+conc = '3p5'  # concentration of sample to be fitted
+preFit_shear = ['1500', '1200', '1000', '800', '500', '300', '200']
+shear = ['1200', '1000', '800', '500', '300', '200', '100']  # shear rate of sample to be fitted
 
 fitChoose = dict(scale=1,
                  background=1,
                  length=1,
                  phi_pd=1,
-                 bandVal=1,)
+                 bandVal=0,)
 
 # fitChoose = dict(scale=0,
 #                  background=0,
-#                  length=1,
+#                  length=0,
 #                  phi_pd=0,
-#                  bandVal=1,)
+#                  bandVal=0,)
 
 
 projPath = '../2D_simFits/ReducedChi2_fits/{conc}wt_CAPB_SLES_2wt_NaCl/{conc}wt_{shear}ps/'.format(
@@ -294,8 +297,10 @@ projPath_full = projPath + files_load[0]
 pars, pars_static = rsf.loadDict(projPath_full, [])
 pars2sim.update(pars)
 pars2static.update(pars_static)
-pars2sim.update({'radius_pd': 0})
-pars2static.update({'radius_pd': 0})
+# pars2sim.update({'phi_pd': 75})
+# print(pars2sim)
+# pars2sim.update({'radius_pd': 0})
+# pars2static.update({'radius_pd': 0})
 del pars2sim['bandVal']
 
 p_list = rsf.fitInput(fitChoose)
