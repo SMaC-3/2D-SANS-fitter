@@ -114,7 +114,6 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         Returns:
             2D sasmodels object
         """
-        print('loop_F1')
         csv_filename = '../ExpDataFiles.csv'
         fieldnames = ['index', 'filename', 'sample', 'shear']
 
@@ -138,9 +137,15 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
         qy_lower = -0.014
         qy_upper = -0.011
 
+        q_min = -0.062
+        q_max = -0.0539
+
         qx_neg = np.logical_and(self.expData_bs[:, 0] <
                                 qx_neg_upper, self.expData_bs[:, 0] > qx_neg_lower)
         data_qx_neg = self.expData_bs[~qx_neg]
+
+        qx_neg = np.logical_and(data_qx_neg[:, 0] < q_max, data_qx_neg[:, 0] > q_min)
+        data_qx_neg = data_qx_neg[~qx_neg]
 
         qx_pos = np.logical_and(data_qx_neg[:, 0] < qx_pos_upper, data_qx_neg[:, 0] > qx_pos_lower)
         data_qx_pos = data_qx_neg[~qx_pos]
