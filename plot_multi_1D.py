@@ -56,13 +56,20 @@ dataFits = []
 for names in pathNameFits:
     dataFits.append(np.loadtxt(names, delimiter="  ", skiprows=1))
 
+viridis_light = ["#bef28d",
+                 "#67f5a8",
+                 "#34cfc7",
+                 "#59b3ff",
+                 "#9b85ff",
+                 "#b400e6"]
 
 # plotting the data
 for i, sets in enumerate(data):
     c = cm.viridis_r((i+1)/6., 1)  # set colour from colourmap
+    c_l = viridis_light[i]
     plt.loglog(sets[:, 0], sets[:, 1]*3**i, 'o', color=c, label=sample[i])
-    plt.plot(dataFits[i][:, 0], dataFits[i][:, 1]*3**i, '-', color='red', alpha=1)
-    plt.plot([0.04, 0.04], [1, 10000], 'black', lineStyle='--')
+    plt.plot(dataFits[i][:, 0], dataFits[i][:, 1]*3**i, '-', color=c_l, alpha=1)
+    # plt.plot([0.04, 0.04], [1, 10000], 'black', lineStyle='--')
 #    plt.plot(sets[:,0], sets[:,1], '--', color='black')
 
 # for i, sets in enumerate(dataFits):
@@ -145,4 +152,4 @@ fig.savefig('SANS1D.png', dpi=300)
 
 # function to show the plot
 plt.show()
-# plt.savefig('testSave.png', dpi=150)
+plt.savefig('SANS1D.png', dpi=150)
