@@ -9,9 +9,10 @@ Created on Thu Mar 19 15:08:51 2020
 import rheoSANS_fitOpt_Functions as rsf
 import numpy as np
 import matplotlib.pyplot as plt
+# import matplotlib.axes as ax
 import matplotlib.colors as mcolors
 
-indexSelect = '64'
+indexSelect = '64-67'
 
 indexNums = rsf.evaluate_files_list(indexSelect)
 
@@ -75,6 +76,8 @@ for i in range(len(indexNums)):
     plt.rc('axes', linewidth=1)
     plt.rc('axes', grid=False)
     plt.rc('axes', labelsize='small')
+    ax = plt.gca()
+    ax.set_aspect(aspect='equal')
     # plt.rc('axes', titlesize = 'large')
     # plt.rc('axes', titlelocation = 'center')
 
@@ -107,14 +110,14 @@ for i in range(len(indexNums)):
 
     # Ticks
     plt.rc('xtick', bottom=True)
-    plt.rc('ytick', left=True)
+    plt.rc('ytick', left=False)
     plt.xticks(rotation=20)
     # plt.yticks(rotation=45)
     plt.rc('xtick.major', width=1.5)
     plt.rc('ytick.major', width=1.5)
-    plt.rc('xtick.minor', width=1.5)
-    plt.rc('ytick.minor', width=1.5)
+    # plt.rc('xtick.minor', width=1.5)
+    # plt.rc('ytick.minor', width=1.5)
 #    plt.xticks(rotation='vertical')
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
-    # plt.savefig('25wt%_exp_{}.png'.format(i))
+    plt.savefig('25wt%_exp_{}.png'.format(i))
