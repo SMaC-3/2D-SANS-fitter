@@ -13,33 +13,36 @@ import matplotlib.pyplot as plt
 
 
 def extractLoop():
-    indexSelect = '6,15,24,34,43,62,71,83,95'
+    indexSelect = '72-82'
 
     indexNums = rsf.evaluate_files_list(indexSelect)
-    describer = 'radAve'
+    describer = 'horiz_30deg'
     saveSet = '1'
 
     centre = np.pi/2
-    width = np.pi
+    width = np.pi/6
 
     radius = 0.07
-    thx = 0.01
+    thx = 0.015
 
     sans = rsf.sans2d()
     sans.qmin = 0.007
 
     for nums in indexNums:
         sans.getData(str(nums))
+        interp, zzq = sans.interpData(sans.expData.data)
+        interp.sample = sans.expData.sample
+        interp.shear = sans.expData.shear
 
         q, I_q, I_err = sector(sans.expData, centre=centre, width=width,
                                save=saveSet, describer=describer)
 
-#        q_ann, I_q_ann = annular(sans.expData, radius= radius,thx= thx,
-#                                 save=saveSet, describer = describer)
+        # q, I_q, I_err = annular(interp, radius=radius, thx=thx,
+        #                         save=saveSet, describer=describer)
         del sans.expData
         fig = plt.figure()
 
-        kwargs = {'xscale': 'log', 'yscale': 'log'}
+        kwargs = {'xscale': 'linear', 'yscale': 'linear'}
 
         ax = fig.add_axes([1, 1, 1, 1], **kwargs)
 
@@ -57,7 +60,7 @@ def sector(dataSet, centre, width, save='0', describer=None):
     sectwid = width  # In radians
 
     # dataSet should be a sasView 2D data object
-    #data_sqrd = dataSet**2
+    # data_sqrd = dataSet**2
     mag = dataSet.q_data  # q values
     sectang = []
 
@@ -216,6 +219,7 @@ def annular(dataSet, radius, thx, save='0', describer=None):
     annul_err = annul_err[sortI]
 
     # Data binning
+    # nbsa = 200
     nbsa = 100
     deltheta = 2*np.pi/nbsa
     binsa = np.linspace(-np.pi/2, 3*np.pi/2, nbsa)
