@@ -40,7 +40,7 @@ c = np.reshape(simInt.data, (sans.nq, sans.nq))
 plt.figure(figsize=[5, 5], dpi=200)
 # plt.plot(np.array([0, 0.06]), [0, 0.06])
 plt.pcolormesh(a, b, c, cmap='jet')
-plt.colorbar()
+plt.colorbar(shrink=0.7, ticks=[20, 25, 30, 35])
 plt.xlim(-0.08, 0.08)
 plt.ylim(-0.08, 0.08)
 plt.xticks([-0.06, -0.03, 0, 0.03, 0.06], [-60, -30, 0, 30, 60])
@@ -56,6 +56,8 @@ plt.rc('ytick', left=True)
 
 # Set plot characteristics from rc parameters
 # Axes
+ax = plt.gca()
+ax.set_aspect(aspect='equal')
 plt.rc('axes', linewidth=1.5)
 plt.rc('axes', grid=False)
 plt.rc('axes', labelsize='small')
