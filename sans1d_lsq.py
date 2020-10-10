@@ -14,19 +14,19 @@ from scipy.optimize import least_squares
 # model.parameters.kernel_parameters
 
 # cylinder
-pars2sim = (dict(scale=0.1815,
-                 background=0.2085,
+pars2sim = (dict(scale=0.8356,
+                 background=0.2733,
                  sld=-0.4,
                  sld_solvent=6.3,
                  radius=19.82,
                  radius_pd=0.163,
                  radius_pd_n=35,
-                 length=81.9792,
+                 length=219.5509,
                  length_pd=0,
                  length_pd_n=35,
                  radius_effective_mode=1,
                  radius_effective=35,
-                 volfraction=0.3093,
+                 volfraction=0.0365,
                  charge=30.827,
                  temperature=298.0,
                  concentration_salt=0.38,
@@ -34,7 +34,7 @@ pars2sim = (dict(scale=0.1815,
                  ))
 
 
-indexSelected = '9'
+indexSelected = '3'
 # p_list = ['scale', 'background', 'length']
 # p_guess = [0.183, 0.21, 82]
 

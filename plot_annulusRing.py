@@ -9,49 +9,66 @@ import sasmodels.data
 import rheoSANS_fitOpt_Functions as rsf
 import annular_sector_extraction_loop as ansect
 import itertools
+
+import nmmn.plots
+wolfram = nmmn.plots.wolframcmap()  # for Mathematica's cmap
+parula = nmmn.plots.parulacmap()  # for MATLAB's cmap
+# turbo=nmmn.plots.turbocmap() # Turbo
+
 # %% codecell
 sans = rsf.sans2d()
 sans.nq = 500
+sans.qmin = 0.007
 sans.q = np.linspace(-sans.qmax, sans.qmax, sans.nq)
 sans.xxq, sans.yyq = np.meshgrid(sans.q, sans.q)
-sans.getSim('5')
-simInt, a = sans.interpData_noMask(None, sans.simImport)
 
-x, y, I, I_ann = ansect.annular(simInt, 0.07, 0.01)
+source = 'exp'
 
-# x2, y2, I2 = ansect.sector(simInt, 0, np.pi/20)
+if source == 'sim':
+    sans.getSim('45')
+    interp, a = sans.interpData_noMask(None, sans.simImport)
+elif source == 'exp':
+    sans.getData('41')
+    interp, a = sans.interpData_noMask(None, sans.expData)
 
+bins, I, err, annul_data = ansect.annular(interp, 0.045, 0.01)
+annul_x = annul_data[0]
+annul_y = annul_data[1]
+annul_I = annul_data[2]
+I_ann = annul_data[3]
 
 # %% codecell
-# an = sasmodels.data.Data2D(x=x, y=y, z=I)
-# sans.sasPlot(an)
+interp.data[~I_ann] = np.nan
 
 
-# %% codecell
-simInt.data[~I_ann] = np.nan
-
-
-a = np.reshape(simInt.qx_data, (sans.nq, sans.nq))
-b = np.reshape(simInt.qy_data, (sans.nq, sans.nq))
-c = np.reshape(simInt.data, (sans.nq, sans.nq))
+a = np.reshape(interp.qx_data, (sans.nq, sans.nq))
+b = np.reshape(interp.qy_data, (sans.nq, sans.nq))
+c = np.reshape(interp.data, (sans.nq, sans.nq))
+# vmax = np.nanmax(c)
+# vmin = np.nanmin(c)
+vmax = np.nanmax(sans.expData.data)
+vmin = np.nanmin(sans.expData.data)
+print(vmax)
 
 # d = np.reshape(I_ann, (50,50))
 # ax = plt.subplot()
-plt.figure(figsize=[5, 5], dpi=200)
+plt.figure(figsize=[5, 5], dpi=500)
 # plt.plot(np.array([0, 0.06]), [0, 0.06])
-plt.pcolormesh(a, b, c, cmap='jet')
-plt.colorbar(shrink=0.7, ticks=[20, 25, 30, 35])
-plt.xlim(-0.08, 0.08)
-plt.ylim(-0.08, 0.08)
-plt.xticks([-0.06, -0.03, 0, 0.03, 0.06], [-60, -30, 0, 30, 60])
-plt.yticks([-0.06, -0.03, 0, 0.03, 0.06], [-60, -30, 0, 30, 60])
-fontsize = '10'
+plt.pcolormesh(a, b, c, cmap=parula, vmin=2, vmax=vmax, norm=mcolors.LogNorm())
+# plt.colorbar(shrink=0.7, ticks=[20, 25, 30, 35])
+plt.xlim(-0.055, 0.055)
+plt.ylim(-0.055, 0.055)
+plt.xticks([-0.05, -0.025, 0, 0.025, 0.05], [-50, -25, 0, 25, 50])
+plt.yticks([-0.05, -0.025, 0, 0.025, 0.05], [-50, -25, 0, 25, 50])
+fontsize = '16'
 
-plt.xlabel('q ' + r'/ $10^{-3} \: \: \bf{\AA^{-1}}$', fontweight='bold', fontsize=fontsize)
-plt.ylabel('q ' + r'/ $10^{-3} \: \: \bf{\AA^{-1}}$', fontweight='bold', fontsize=fontsize)
+plt.xlabel('q ' + r'/ $\bf{10^{-3} \: \: \AA^{-1}}$', fontweight='bold', fontsize=fontsize)
+plt.ylabel('q ' + r'/ $\bf{10^{-3} \: \: \AA^{-1}}$', fontweight='bold', fontsize=fontsize)
 plt.rc('figure', frameon=False)
 plt.rc('axes.spines', top=False)
 plt.rc('axes.spines', right=False)
+plt.rc('axes.spines', left=True)
+plt.rc('axes.spines', bottom=True)
 plt.rc('ytick', left=True)
 
 # Set plot characteristics from rc parameters
@@ -107,35 +124,14 @@ plt.xticks(fontsize=fontsize)
 plt.yticks(fontsize=fontsize)
 
 fig = plt.figure(1)
-fig.savefig('annularRing.png', dpi=300)
-
-# plt.scatter([-30,60],[30,-60])
+fig.savefig('annularRing_10wt_500ps.png', dpi=500)
 
 # %% codecell
 
-# %% codecell
-# simSet = set(itertools.product(self.qx_unique, self.qy_unique))
-# expSet = {(vals[0], vals[1]) for vals in self.expData_sort}
-#
-# setDif = simSet - expSet  # (x,y) pairs in simulation not in experiment
-# # print(setDif)
-# arrayDif = np.array(list(setDif)
-# # print(arrayDif)
-# ranI=1000
-# # (x,y) pairs in simulation not in experiment with constant z
-# self.arrayDif_z=np.insert(arrayDif, 2, ranI, axis=1)
-# # print(arrayDif_z)
-# exp_data=self.expData_sort[:, 0:3]
-# # print(exp_data)
-# self.expData_fill=np.vstack((exp_data, self.arrayDif_z))
-# self.expData_fill_sort=np.array(
-#     sorted(self.expData_fill, key=lambda col: (col[1], col[0])))
-#
-#
-# zz=np.full_like(xx, np.nan)
-# zz[~(xx < 0)]=10
-# yy
-# np.shape(I)
-# plt.pcolormesh(xx, yy, zz, cmap='jet', vmin=2,
-#                vmax=70, norm=mcolors.LogNorm())
-# %% codecell
+# plt.rcParams["figure.figsize"] = 12.8, 9.6
+# # Normalize the colors based on Z value
+# norm = plt.Normalize(zzq.min(), zzq.max())
+# colors = cm.jet(norm(zzq))
+# ax = plt.axes(projection='3d')
+# surf = ax.plot_surface(self.xxq, self.yyq, zzq, facecolors=colors, shade=False)
+# surf.set_facecolor((0, 0, 0, 0))

@@ -11,28 +11,49 @@ import numpy as np
 import matplotlib.pyplot as plt
 # import matplotlib.axes as ax
 import matplotlib.colors as mcolors
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
 
-indexSelect = '64-67'
+import nmmn.plots
+wolfram = nmmn.plots.wolframcmap()  # for Mathematica's cmap
+parula = nmmn.plots.parulacmap()  # for MATLAB's cmap
+# turbo=nmmn.plots.turbocmap() # Turbo
 
-indexNums = rsf.evaluate_files_list(indexSelect)
+
+expInd = '41'
+simInd = '53'
+
+indexNums = rsf.evaluate_files_list(expInd)
+# indexNums2 = rsf.evaluate_files_list(simInd)
 
 sans = rsf.sans2d()
-sans.qmin = 0.04
+sans.qmin = 0.007
+sans.nq = 500
+sans.q = np.linspace(-sans.qmax, sans.qmax, sans.nq)
+sans.xxq, sans.yyq = np.meshgrid(sans.q, sans.q)
 grids = []
+plot = []
 
 q = np.linspace(-sans.qmax, sans.qmax, sans.nq)
 xxq, yyq = np.meshgrid(q, q)
 
-
-for idx in indexNums:
+for i, idx in enumerate(indexNums):
     sans.getData(str(idx))
-    interp, zzq = sans.interpData(data=None, dataSet=sans.expData)
-    grids.append(zzq)
+    # sans.getSim(str(indexNums2[i]))
+    interp_exp, zzq_exp = sans.interpData(data=None, dataSet=sans.expData)
+    # interp_sim, zzq_sim = sans.interpData(data=None, dataSet=sans.simImport)
+    # zzq = abs(zzq_exp - zzq_sim)
+    grids.append(zzq_exp)
+    plot.append('exp' + str(idx))
+    # grids.append(zzq_sim)
+    # plot.append('sim' + str(indexNums2[i]))
+    # grids.append(zzq)
+
     # sans.getSim(str(idx))
     # interp, zzq = sans.interpData(data=None, dataSet=sans.simImport)
     # grids.append(zzq)
 
-    del interp, zzq, sans.expData
+    # del interp, zzq_exp, sans.expData
 
 minima = []
 maxima = []
@@ -43,6 +64,7 @@ for sets in grids:
 
 vmin = np.amin(minima)
 vmax = np.amax(maxima)
+print(vmax)
 
 cmToInch = 0.393701
 
@@ -54,13 +76,27 @@ cmToInch = 0.393701
 # mymap = mcolors.LinearSegmentedColormap.from_list('my_colormap', colors)
 # print(vmin)
 
-for i in range(len(indexNums)):
-    plt.figure(figsize=[5.1, 4.08], dpi=200)
+# plot annular ring
+circ = np.linspace(0, 2*np.pi, 50)
+rad = 0.045
+thx = 0.01
+inner_x = rad*np.cos(circ)
+inner_y = rad*np.sin(circ)
+outer_x = (thx+rad)*np.sin(circ)
+outer_y = (thx+rad)*np.cos(circ)
+cmap = parula
+
+for i in range(len(plot)):
+
+    plt.pcolormesh(xxq, yyq, grids[i], cmap=cmap, vmin=2,
+                   vmax=vmax, norm=mcolors.LogNorm())
+
+    plt.plot(inner_x, inner_y, 'black', lineStyle='-')
+    plt.plot(outer_x, outer_y, 'black', lineStyle='-')
+
     # plt.plot([-0.045, 0.045], [-0.19, 0.19], color='black')
     # plt.plot([-0.045, 0.045], [0.19, -0.19], color='black')
-    plt.pcolormesh(xxq, yyq, grids[i], cmap='jet', vmin=2,
-                   vmax=vmax, norm=mcolors.LogNorm())
-    plt.title(indexNums[i])
+    plt.title(plot[i])
     # set the limits of the plot to the limits of the data
     # plt.axis([sim.xxq.min(), sim.xxq.max(), sim.yyq.min(), sim.yyq.max()])
     plt.colorbar()
@@ -91,7 +127,7 @@ for i in range(len(indexNums)):
     # fig_width = 10 *cmToInch
     # fig_height = 10 *cmToInch
     # plt.rc('figure', figsize= [fig_width,fig_height])
-    plt.rc('figure', dpi='150')
+    plt.rc('figure', dpi='500')
     # plt.rc('figure.subplot', hspace = '0.01')
     # plt.rc('figure.subplot', wspace = '0.01')
 
@@ -120,4 +156,21 @@ for i in range(len(indexNums)):
 #    plt.xticks(rotation='vertical')
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
-    plt.savefig('25wt%_exp_{}.png'.format(i))
+    plt.savefig('10wt%_500ps.png'.format(i), dpi=500)
+
+
+# %% codecell
+# plt.rcParams["figure.figsize"] = 12.8, 9.6
+# # Normalize the colors based on Z value
+# zzq = grids[0]
+# norm = plt.Normalize(zzq.min(), zzq.max())
+# colors = cm.jet(norm(zzq))
+# ax = plt.axes(projection='3d')
+# zzq1 = np.ones_like(zzq)
+# neg = xxq < 0
+# zzq1 = zzq[~neg]
+# # zzq[0:100] = 1
+# surf = ax.plot_surface(xxq, yyq, zzq, cmap=cm.jet,
+#                        linewidth=0, antialiased=False,
+#                        shade=False, rstride=1, cstride=1)
+# surf.set_facecolor((0, 0, 0, 0))

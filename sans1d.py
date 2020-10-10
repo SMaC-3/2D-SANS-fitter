@@ -53,7 +53,7 @@ class Sans1d:
 
         self.description = description[0]
 
-        self.setName = '../2D_annular_sector_extraction/py_sect_radAve/' + fileName[0]
+        self.setName = '../2D_annular_sector_extraction/py_sect_radAve_exp/' + fileName[0]
 
         self.expData_raw = np.loadtxt(self.setName, delimiter="  ", skiprows=self.skipRows)
 

@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 
 
 def extractLoop():
-    indexSelect = '72-82'
+    indexSelect = '2-11'
 
     indexNums = rsf.evaluate_files_list(indexSelect)
-    describer = 'horiz_30deg'
+    describer = 'ann_sim_200bns_thx0p015'
     saveSet = '1'
 
     centre = np.pi/2
@@ -28,30 +28,53 @@ def extractLoop():
     sans = rsf.sans2d()
     sans.qmin = 0.007
 
+    # for nums in indexNums:
+    #     sans.getData(str(nums))
+    #     interp, zzq = sans.interpData(sans.expData.data)
+    #     interp.sample = sans.expData.sample
+    #     interp.shear = sans.expData.shear
+    #
+    #     q, I_q, I_err = sector(sans.expData, centre=centre, width=width,
+    #                            save=saveSet, describer=describer)
+    #
+    #     # q, I_q, I_err = annular(interp, radius=radius, thx=thx,
+    #     #                         save=saveSet, describer=describer)
+    #     del sans.expData
+    #     fig = plt.figure()
+    #
+    #     kwargs = {'xscale': 'linear', 'yscale': 'linear'}
+    #
+    #     ax = fig.add_axes([1, 1, 1, 1], **kwargs)
+    #
+    #     ax.errorbar(q, I_q, yerr=I_err, linestyle='', marker='o', markersize=1)
+
     for nums in indexNums:
-        sans.getData(str(nums))
+        sans.getSim(str(nums))
+        sans.expData = sans.simImport
         interp, zzq = sans.interpData(sans.expData.data)
-        interp.sample = sans.expData.sample
-        interp.shear = sans.expData.shear
+        interp.sample = sans.simImport.sample
+        print(nums)
+        interp.shear = sans.simImport.shear[0]
+        print(interp.shear)
 
-        q, I_q, I_err = sector(sans.expData, centre=centre, width=width,
-                               save=saveSet, describer=describer)
+        # q, I_q, I_err = sector(sans.expData, centre=centre, width=width,
+        #                        save=saveSet, describer=describer)
 
-        # q, I_q, I_err = annular(interp, radius=radius, thx=thx,
-        #                         save=saveSet, describer=describer)
-        del sans.expData
+        q, I_q, I_err = annular(interp, radius=radius, thx=thx,
+                                save=saveSet, describer=describer)
+        del sans.simImport
         fig = plt.figure()
 
         kwargs = {'xscale': 'linear', 'yscale': 'linear'}
 
-        ax = fig.add_axes([1, 1, 1, 1], **kwargs)
-
-        ax.errorbar(q, I_q, yerr=I_err, linestyle='', marker='o', markersize=1)
+        # ax = fig.add_axes([1, 1, 1, 1], **kwargs)
+        #
+        # ax.errorbar(q, I_q, yerr=I_err, linestyle='', marker='o', markersize=1)
 
     return
 
 
-def sector(dataSet, centre, width, save='0', describer=None):
+def sector(dataSet, centre, width, save='0', describer=None, nbins=100, loc='py_sect_radAve/'):
 
     xcentre = 0
     ycentre = 0
@@ -121,7 +144,7 @@ def sector(dataSet, centre, width, save='0', describer=None):
     seccrop_ang = seccrop_ang[sortq]
 
     # Make 100 bins spaced log linearly between min and max q
-    nbs = 100
+    nbs = nbins
     minMag = np.min(seccrop_mag)
     maxMag = np.max(seccrop_mag)
 
@@ -159,12 +182,9 @@ def sector(dataSet, centre, width, save='0', describer=None):
 
     if save == '1':
         fileType = '.dat'
-        if dataSet.shear[0][0] == '0':
-            fileName = describer + '_' + str(dataSet.sample[0]) + '_' + 'static'
-        else:
-            fileName = describer + '_' + \
-                str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
-        location = '../2D_annular_sector_extraction/py_sect_radAve/'
+        fileName = describer + '_' + \
+            str(dataSet.sample[0]) + 'wt' + '_' + str(dataSet.shear) + 'ps'
+        location = '../2D_annular_sector_extraction/' + loc
         fullName = location + fileName + fileType
         with open(fullName, 'wt') as fh:
             fh.write("q  I(q)  err_I\n")
@@ -174,7 +194,7 @@ def sector(dataSet, centre, width, save='0', describer=None):
     return bins, binave, errave
 
 
-def annular(dataSet, radius, thx, save='0', describer=None):
+def annular(dataSet, radius, thx, save='0', describer=None, nbins=100, loc='py_annular_exp/'):
 
     radius = radius
     thx = thx
@@ -219,8 +239,8 @@ def annular(dataSet, radius, thx, save='0', describer=None):
     annul_err = annul_err[sortI]
 
     # Data binning
-    # nbsa = 200
-    nbsa = 100
+    nbsa = nbins
+    # nbsa = 100
     deltheta = 2*np.pi/nbsa
     binsa = np.linspace(-np.pi/2, 3*np.pi/2, nbsa)
 
@@ -251,14 +271,22 @@ def annular(dataSet, radius, thx, save='0', describer=None):
 
     if save == '1':
         fileType = '.dat'
+        # fileName = describer + '_' + \
+        #     str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
         fileName = describer + '_' + \
-            str(dataSet.sample[0]) + '_' + str(dataSet.shear[0][0:-14]) + 'ps'
-        location = '../2D_annular_sector_extraction/py_annular/'
+            str(dataSet.sample[0]) + 'wt' + '_' + str(dataSet.shear) + 'ps'
+        location = '../2D_annular_sector_extraction/' + loc
         fullName = location + fileName + fileType
         with open(fullName, 'wt') as fh:
             fh.write("q  I(q)  err_I\n")
             for x, y, z in zip(binsa, binavea, binavea):
                 fh.write("%g  %g  %g\n" % (x, y, z))
 
-    # return binsa, binavea, erravea
-    return annul_x, annul_y, annul_I, I_ann
+    annul_data = []
+    annul_data.append(annul_x)
+    annul_data.append(annul_y)
+    annul_data.append(annul_I)
+    annul_data.append(I_ann)
+
+    return binsa, binavea, erravea, annul_data
+    # return annul_x, annul_y, annul_I, I_ann

@@ -11,6 +11,15 @@ __pycache__/
 test.py
 *.png
 
+legendre.py
+plot_2D_grid.py
+plot_annularGrid.py
+plot_oneAxis.py
+plot_twoAxis.py
+run_script.py
+
+
+
 # C extensions
 *.so
 

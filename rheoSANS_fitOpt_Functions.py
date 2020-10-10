@@ -326,6 +326,9 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
             x=self.simImport_sort[:, 0], y=self.simImport_sort[:, 1],
             z=self.simImport_sort[:, 2], dz=dz)
 
+        self.simImport.sample = sample
+        self.simImport.shear = shear
+
         return
 
     def buildSasGrid(self):
@@ -674,7 +677,7 @@ class sans2d:  # Necessary? Making another class to be used by two other classes
 #############################################################################
 
 
-def input_sample_check(conc, shear, id):
+def input_sample_check(conc, shear, idx):
     """Check that conc and shear match with that defined by supplied index"""
     path = '../'
     file = '/expDataFiles.csv'
@@ -682,29 +685,31 @@ def input_sample_check(conc, shear, id):
     os.path.isfile(path + file)
     exp = pd.read_csv(path+file, index_col='index')
 
-    shear_raw = exp.loc[id, 'shear']
-    sample_raw = exp.loc[id, 'sample']
+    shear_raw = exp.loc[idx, 'shear']
+    sample_raw = exp.loc[idx, 'sample']
 
-    for idx, char in enumerate(shear_raw):
-        if char != ' ':
-            continue
-        else:
-            shearIdx = idx
-    #            print(char)
-            break
-
-    for idx, char in enumerate(sample_raw):
-        if char != 'w':
-            continue
-        else:
-            sampleIdx = idx
-    #            print(char)
-            break
+    # for idx, char in enumerate(shear_raw):
+    #     if char != ' ':
+    #         continue
+    #     else:
+    #         shearIdx = idx
+    # #            print(char)
+    #         break
+    #
+    # for idx, char in enumerate(sample_raw):
+    #     if char != 'w':
+    #         continue
+    #     else:
+    #         sampleIdx = idx
+    # #            print(char)
+    #         break
 
     # print(shearIdx)
-    x = shear_raw[0:shearIdx]
-    y = sample_raw[0:sampleIdx]
-
+    # x = shear_raw[0:shearIdx]
+    # y = sample_raw[0:sampleIdx]
+    x = str(int(shear_raw))
+    y = str(int(sample_raw))
+    print(x, y)
     if conc != y or shear != x:
         raise Exception('Conc or shear mismatch')
     else:
@@ -872,22 +877,23 @@ def save(sans, describer, minParams, minPars, stats, location, fitInfo, descript
         print('error: file path does not exist. Please input a valid file path')
         location = input('file path: ')
 
-    for idx, char in enumerate(sans.expData.shear[0]):
-        if char != ' ':
-            continue
-        else:
-            shearIdx = idx
-            break
+    # for idx, char in enumerate(sans.expData.shear[0]):
+    #     if char != ' ':
+    #         continue
+    #     else:
+    #         shearIdx = idx
+    #         break
 
     # Build name for modelled scattering data
-    shear = sans.expData.shear[0][0:shearIdx]
+    # shear = sans.expData.shear[0][0:shearIdx]
+    shear = sans.expData.shear[0]
 
     name = sans.expData.sample[0] + '_' + shear + 'ps'
     post1 = '_sim'
     type1 = '.dat'
 
     saveName1 = name + post1 + describer + '_'
-    # versionNum1 = input("Input a version number: ")
+    # versionNum1 = input("Input a version number: " )
     versionNum1 = description
 
     # Write modelled scattering data to 3 column dat file

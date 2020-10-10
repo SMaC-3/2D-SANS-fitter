@@ -14,10 +14,10 @@ import numpy as np
 import rheoSANS_fitOpt_Functions as rsf
 
 # Choose data to plot
-plot = "2, 4-8"
+plot = "3, 4-8"
 
 # set path and return pathnames for data
-folder = '../2D_annular_sector_extraction/py_sect_radAve/'
+folder = '../2D_annular_sector_extraction/py_sect_radAve_exp/'
 
 csv_filename = folder + 'radAve_expData.csv'
 fieldnames = ['index', 'filename', 'sample', 'shear']
@@ -67,8 +67,12 @@ viridis_light = ["#bef28d",
 for i, sets in enumerate(data):
     c = cm.viridis_r((i+1)/6., 1)  # set colour from colourmap
     c_l = viridis_light[i]
-    plt.loglog(sets[:, 0], sets[:, 1]*3**i, 'o', color=c, label=sample[i])
-    plt.plot(dataFits[i][:, 0], dataFits[i][:, 1]*3**i, '-', color=c_l, alpha=1)
+    logical_reg = (dataFits[i][:, 0] < 0.04)
+    plt.loglog(sets[:, 0], sets[:, 1]*np.sqrt(10)**i, 'o', color=c, label=sample[i] + ' wt%')
+    plt.plot(dataFits[i][~logical_reg, 0], dataFits[i][~logical_reg, 1]
+             * np.sqrt(10)**i, '-', color=c_l, alpha=1)
+    plt.plot(dataFits[i][logical_reg, 0], dataFits[i][logical_reg, 1]
+             * np.sqrt(10)**i, lineStyle='--', color=c_l, alpha=1)
     # plt.plot([0.04, 0.04], [1, 10000], 'black', lineStyle='--')
 #    plt.plot(sets[:,0], sets[:,1], '--', color='black')
 
@@ -78,8 +82,8 @@ for i, sets in enumerate(data):
 ##    plt.plot(sets[:,0], sets[:,1], '--', color='black')
 
 
-plt.legend()
-fontsize = '10'
+plt.legend(labelspacing=-2.5, loc=[0, 0.3])
+fontsize = '12'
 plt.rc('text', usetex=False)
 # plt.rc('font', family='serif')
 # naming the axes
@@ -102,6 +106,10 @@ ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%g'))
 plt.rc('axes', linewidth=1.5)
 plt.rc('axes', grid=False)
 plt.rc('axes', labelsize='small')
+plt.rc('axes.spines', top=True)
+plt.rc('axes.spines', right=True)
+plt.rc('axes.spines', bottom=True)
+plt.rc('axes.spines', left=True)
 #plt.rc('axes', titlesize = 'large')
 #plt.rc('axes', titlelocation = 'center')
 
@@ -115,7 +123,7 @@ cmToInch = 0.393701
 fig_width = 10.41 * cmToInch
 fig_height = 13.54 * cmToInch
 plt.rc('figure', figsize=[fig_width, fig_height])
-plt.rc('figure', dpi='150')
+plt.rc('figure', dpi='500')
 #plt.rc('figure.subplot', hspace = '0.01')
 #plt.rc('figure.subplot', wspace = '0.01')
 
@@ -148,8 +156,8 @@ plt.xticks(fontsize=fontsize)
 plt.yticks(fontsize=fontsize)
 
 fig = plt.figure(1)
-fig.savefig('SANS1D.png', dpi=300)
+fig.savefig('SANS1D.png', dpi=500)
 
 # function to show the plot
-plt.show()
-plt.savefig('SANS1D.png', dpi=150)
+# plt.show()
+# plt.savefig('SANS1D.png', dpi=150)
